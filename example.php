@@ -3,13 +3,12 @@
 require 'dwolla.php';
 
 // CONSTANTS
-$apiKey = 'NrGOvb6djfAR9Pb2U1Jho+f+fuPRSuEUTfCiiJevNH2K/u4NQg';
-$apiSecret = 'PIJI6kXaRmbBVi2sgfRSdgqEjioIIbwOiMC+UvTQd/Oy5cWbU7';
-$token = 'LgMbBCjFXIlK2DuCF48gpVHQrkec+9Bn8Bo1EmxhkGkfwNzlaK';
+$apiKey		= '*****';
+$apiSecret	= '*****';
+$token		= '*****';
 
 // Instantiate a new Dwolla REST Client
 $Dwolla = new DwollaRestClient($apiKey, $apiSecret, $token);
-
 
 // Get user's balance
 $balance = $Dwolla->balance();

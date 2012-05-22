@@ -2,8 +2,7 @@
 /**
  * Dwolla REST API Library for PHP
  *
- * @category    Dwolla
- * @package     Dwolla PHP API Library
+ * @description Dwolla - PHP Client API Library
  * @copyright   Copyright (c) 2012 Dwolla Inc. (http://www.dwolla.com)
  * @autor       Michael Schonfeld <michael@dwolla.com>
  * @version     1.0.0
@@ -11,7 +10,6 @@
  */
 
 define ("API_SERVER", "https://www.dwolla.com/oauth/rest/");
-define ("API_DEBUG", false);
 
 if (!function_exists('curl_init'))  throw new Exception("Dwolla's API Client Library requires the CURL PHP extension.");
 if (!function_exists('json_decode')) throw new Exception("Dwolla's API Client Library requires the JSON PHP extension.");
@@ -21,22 +19,62 @@ class DwollaRestClient {
     private $apiSecret;
     private $oauthToken;
 
-    private $permissions = array("send", "transactions", "balance", "request", "contacts", "accountinfofull");
-    private $redirect_uri;
+    private $permissions;
+    private $redirectUri;
 
     private $errorMessage = FALSE; // Store any error messages we get from Dwolla
 
-    public function __construct($apiKey = FALSE, $apiSecret = FALSE, $token = FALSE)
+    public function __construct($apiKey = FALSE,
+                                $apiSecret = FALSE,
+                                $redirectUri = FALSE,
+                                $permissions = array("send", "transactions", "balance", "request", "contacts", "accountinfofull"))
     {
         $this->apiKey       = $apiKey;
         $this->apiSecret    = $apiSecret;
-        $this->oauthToken   = $token;
+        $this->redirectUri  = $redirectUri;
+        $this->permissions  = $permissions;
         $this->apiServerUrl = API_SERVER;
     }
 
     // ***********************
     // Authentication Methods
     // ***********************
+    public function getAuthUrl()
+    {
+        $params = array(
+            'client_id'     => $this->apiKey,
+            'client_secret' => $this->apiSecret,
+            'redirect_uri'  => $this->redirectUri,
+            'scope'         => implode('|', $this->permissions)
+        );
+        $url = 'https://www.dwolla.com/oauth/v2/authenticate?' . http_build_query($params);
+
+        return $url;
+    }
+
+    public function requestToken($code)
+    {
+        if(!$code) { return $this->_setError('Please pass an oauth code.'); }
+
+        $params = array(
+            'client_id'     => $this->apiKey,
+            'client_secret' => $this->apiSecret,
+            'redirect_uri'  => $this->redirectUri,
+            'grant_type'    => 'authorization_code',
+            'code'          => $code
+        );
+        $url = 'https://www.dwolla.com/oauth/v2/token?'  . http_build_query($params);
+        $response = json_decode($this->_curl($url, 'GET'), TRUE);
+
+        if($response['error'])
+        {
+            $this->errorMessage = $response['error_description'];
+            return FALSE;
+        }
+
+        return $response['access_token'];
+    }
+
     public function setToken($token) {
         if(!$token) { return $this->_setError('Please pass a token string.'); }
 
@@ -64,7 +102,7 @@ class DwollaRestClient {
     public function getUser($user_id = FALSE)
     {
         if(!$user_id) { return $this->_setError('Please pass a user ID.'); }
-        
+
         $params = array(
             'client_id'     => $this->apiKey,
             'client_secret' => $this->apiSecret
@@ -294,18 +332,7 @@ class DwollaRestClient {
         $params['oauth_token'] = $this->oauthToken;
         $url = $this->apiServerUrl . $request . "?" . http_build_query($params);
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
-        curl_setopt($ch, CURLOPT_HEADER, FALSE);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json', "Content-type: application/json"));
-
-        $rawData = curl_exec($ch);
-        curl_close($ch);
+        $rawData = $this->_curl($url, 'POST', $params);
 
         return json_decode($rawData, TRUE);
     }
@@ -315,19 +342,27 @@ class DwollaRestClient {
         $params['oauth_token'] = $this->oauthToken;
         $url = $this->apiServerUrl . $request . "?" . http_build_query($params);
 
+        $rawData = $this->_curl($url, 'GET');
+
+        return json_decode($rawData, TRUE);
+    }
+
+    protected function _curl($url, $method = 'GET', $params = array())
+    {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
         curl_setopt($ch, CURLOPT_HEADER, FALSE);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json', "Content-type: application/json")); 
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json', 'Content-type: application/json'));
 
         $rawData = curl_exec($ch);
         curl_close($ch);
 
-        return json_decode($rawData, TRUE);
+        return $rawData;
     }
 }
 ?>
