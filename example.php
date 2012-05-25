@@ -3,12 +3,19 @@
 require 'dwolla.php';
 
 // CONSTANTS
+require 'keys.php';
+/*
 $apiKey		= '*****';
 $apiSecret	= '*****';
 $token		= '*****';
+$pin		= '****';
+*/
 
 // Instantiate a new Dwolla REST Client
-$Dwolla = new DwollaRestClient($apiKey, $apiSecret, $token);
+$Dwolla = new DwollaRestClient($apiKey, $apiSecret);
+
+// Use a previously generated access token
+$Dwolla->setToken($token);
 
 // Get user's balance
 $balance = $Dwolla->balance();
@@ -17,7 +24,7 @@ echo "Your balance is: {$balance} \n";
 echo "-------------------- \n";
 
 // Send a money request
-$tid = $Dwolla->send('6443', '812-546-3855', 0.01, 'New PHP Library Test');
+$tid = $Dwolla->send($pin, '812-546-3855', 0.01, 'New PHP Library Test');
 if(!$tid) { echo "Error: {$Dwolla->getError()} \n"; }
 echo "Send transaction ID: {$tid} \n";
 echo "-------------------- \n";
