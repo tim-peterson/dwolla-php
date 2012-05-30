@@ -43,7 +43,7 @@ class DwollaRestClient {
     {
         $params = array(
             'client_id'     => $this->apiKey,
-            'client_secret' => $this->apiSecret,
+            'response_type' => 'code',
             'redirect_uri'  => $this->redirectUri,
             'scope'         => implode('|', $this->permissions)
         );
@@ -66,7 +66,7 @@ class DwollaRestClient {
         $url = 'https://www.dwolla.com/oauth/v2/token?'  . http_build_query($params);
         $response = json_decode($this->_curl($url, 'GET'), TRUE);
 
-        if($response['error'])
+        if(isset($response['error']))
         {
             $this->errorMessage = $response['error_description'];
             return FALSE;
