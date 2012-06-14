@@ -2,14 +2,8 @@
 // Include the Dwolla REST Client
 require 'dwolla.php';
 
-// CONSTANTS
+// Hide mah keys!
 require 'keys.php';
-/*
-$apiKey		= '*****';
-$apiSecret	= '*****';
-$token		= '*****';
-$pin		= '****';
-*/
 
 // Instantiate a new Dwolla REST Client
 $Dwolla = new DwollaRestClient($apiKey, $apiSecret);

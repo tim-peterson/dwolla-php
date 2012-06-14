@@ -64,7 +64,7 @@ class DwollaRestClient {
             'code'          => $code
         );
         $url = 'https://www.dwolla.com/oauth/v2/token?'  . http_build_query($params);
-        $response = json_decode($this->_curl($url, 'GET'), TRUE);
+        $response = $this->_curl($url, 'GET');
 
         if(isset($response['error']))
         {
@@ -90,6 +90,14 @@ class DwollaRestClient {
     // ******************
     // Users Methods
     // ******************
+    
+    /**
+     * Grabs the account information for the
+     * authenticated user
+     *
+     * @param  {}
+     * @return {array} Account information
+     */
     public function me()
     {
         $response = $this->_get('users');
@@ -99,6 +107,13 @@ class DwollaRestClient {
         return $me;
     }
 
+    /**
+     * Grabsc the basic account information for
+     * the given Dwollaaccount ID
+     *
+     * @param {string/int} Dwolla Account ID
+     * @return {array} Basic account information
+     */
     public function getUser($user_id = FALSE)
     {
         if(!$user_id) { return $this->_setError('Please pass a user ID.'); }
@@ -178,11 +193,25 @@ class DwollaRestClient {
     // *********************
     // Transactions Methods
     // *********************
+    
+    /**
+     * Send money from the authenticated account
+     * to another online account
+     *
+     * @param {string} The sending account's PIN
+     * @param {string} The destination account ID; Can be Dwolla ID, email, phone, Twitter ID, or Facebook ID
+     * @param {string} Amount to be sent
+     * @param {string} The destination ID type; Can be 'Dwolla', 'Email', 'Phone', 'Twitter', or 'Facebook'
+     * @param {string} Notes to be associated with this transaction
+     * @param {int} Facilitator fee amount to be added
+     * @param {boolean} Does the sending user assume any and all transaction costs?
+     * @return {int} The transaction ID, or {boolean:FALSE} when an error occurs
+     */
     public function send(   $pin = FALSE,
                             $destinationId = FALSE,
                             $amount = FALSE,
-                            $notes = '',
                             $destinationType = 'Dwolla',
+                            $notes = '',
                             $facilitatorAmount = 0,
                             $assumeCosts = TRUE
                         )
@@ -210,12 +239,24 @@ class DwollaRestClient {
         return $transactionId;
     }
 
+    /**
+     * Send a 'Request money' from the authenticated
+     * account to another online account
+     *
+     * @param {string} The requesting account's PIN
+     * @param {string} The destination account ID; Can be Dwolla ID, email, phone, Twitter ID, or Facebook ID
+     * @param {string} Amount to be sent
+     * @param {string} The destination ID type; Can be 'Dwolla', 'Email', 'Phone', 'Twitter', or 'Facebook'
+     * @param {string} Notes to be associated with this transaction
+     * @param {int} Facilitator fee amount to be added
+     * @return {int} The request transaction ID, or {boolean:FALSE} when an error occurs
+     */
     public function request($pin = FALSE,
                             $sourceId = FALSE,
-                            $sourceType = 'Dwolla',
                             $amount = FALSE,
-                            $facilitatorAmount = 0,
-                            $notes = '')
+                            $sourceType = 'Dwolla',
+                            $notes = '',
+                            $facilitatorAmount = 0)
     {
         // Verify required paramteres
         if(!$pin) { return $this->_setError('Please enter a PIN.'); }
@@ -239,6 +280,13 @@ class DwollaRestClient {
         return $transactionId;
     }
 
+    /**
+     * Grab information for the given
+     * transaction ID
+     *
+     * @param {int} Transaction ID to which information is pulled
+     * @return {array} Transaction information
+     */
     public function transaction($transactionId)
     {
         // Verify required paramteres
@@ -253,6 +301,16 @@ class DwollaRestClient {
         return $transaction;
     }
 
+    /**
+     * Grabs a list of all transactions associated
+     * with the authenticated account
+     *
+     * @param {string} 
+     * @param {array} 
+     * @param {int} 
+     * @param {boolean} 
+     * @return {array} List of transactions
+     */
     public function listings(   $sinceDate = FALSE,
                                 $types = array('money_sent', 'money_received', 'deposit', 'withdrawal', 'fee'),
                                 $limit = 10,
@@ -334,7 +392,7 @@ class DwollaRestClient {
 
         $rawData = $this->_curl($url, 'POST', $params);
 
-        return json_decode($rawData, TRUE);
+        return $rawData;
     }
 
     protected function _get($request, $params = array())
@@ -344,25 +402,43 @@ class DwollaRestClient {
 
         $rawData = $this->_curl($url, 'GET');
 
-        return json_decode($rawData, TRUE);
+        return $rawData;
     }
 
     protected function _curl($url, $method = 'GET', $params = array())
     {
+    	// Set up our CURL request
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
         curl_setopt($ch, CURLOPT_HEADER, FALSE);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json', 'Content-type: application/json'));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json', 'Content-type: application/json;charset=UTF-8'));
+        
+        // Windows require this certificate
 
+        // Initiate request
         $rawData = curl_exec($ch);
+        
+        // If HTTP response wasn't 200,
+        // log it as an error!
+		$code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if($code !== 200) {
+        	return array(
+        		'Success' => FALSE,
+        		'Message' => "Request failed. Server responded with: {$code}"
+        	);
+        }
+
+        // All done with CURL
         curl_close($ch);
 
-        return $rawData;
+        // Otherwise, assume we got some
+        // sort of a response
+        return json_decode($rawData, TRUE);;
     }
 }
 ?>
