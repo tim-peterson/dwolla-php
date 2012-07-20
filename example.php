@@ -11,18 +11,22 @@ $Dwolla = new DwollaRestClient($apiKey, $apiSecret);
 // Use a previously generated access token
 $Dwolla->setToken($token);
 
+// Send a money request
+/*
+$tid = $Dwolla->request($pin, '812-546-3855', 0.01);
+if(!$tid) { echo "Error: {$Dwolla->getError()} \n"; }
+echo "Send transaction ID: {$tid} \n";
+echo "-------------------- \n";
+*/
+
 // Get user's balance
 $balance = $Dwolla->balance();
 if(!$balance) { echo "Error: {$Dwolla->getError()} \n"; }
 echo "Your balance is: {$balance} \n";
 echo "-------------------- \n";
 
-// Send a money request
-$tid = $Dwolla->send($pin, '812-546-3855', 0.01, 'New PHP Library Test');
-if(!$tid) { echo "Error: {$Dwolla->getError()} \n"; }
-echo "Send transaction ID: {$tid} \n";
-echo "-------------------- \n";
 
+/*
 // Get transaction details
 $details = $Dwolla->transaction('743160');
 if(!$details) { echo "Error: {$Dwolla->getError()} \n"; }
@@ -60,3 +64,4 @@ echo "-------------------- \n";
 
 
 
+*/

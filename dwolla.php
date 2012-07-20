@@ -266,8 +266,8 @@ class DwollaRestClient {
         // Build request, and send it to Dwolla
         $params = array(
             'pin'               => $pin,
-            'sourceId'          => $destinationId,
-            'sourceType'        => $destinationType,
+            'sourceId'          => $sourceId,
+            'sourceType'        => $sourceType,
             'amount'            => $amount,
             'facilitatorAmount' => $facilitatorAmount,
             'notes'             => $notes
@@ -419,6 +419,9 @@ class DwollaRestClient {
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json', 'Content-type: application/json;charset=UTF-8'));
         
         // Windows require this certificate
+        $ca = dirname(__FILE__);
+        curl_setopt($ch, CURLOPT_CAINFO, $ca); // Set the location of the CA-bundle
+        curl_setopt($ch, CURLOPT_CAINFO, $ca . '/cacert.pem'); // Set the location of the CA-bundle
 
         // Initiate request
         $rawData = curl_exec($ch);
@@ -426,7 +429,7 @@ class DwollaRestClient {
         // If HTTP response wasn't 200,
         // log it as an error!
 		$code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if($code !== 200) {
+		if($code !== 200) {
         	return array(
         		'Success' => FALSE,
         		'Message' => "Request failed. Server responded with: {$code}"
