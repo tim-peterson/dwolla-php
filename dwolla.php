@@ -132,19 +132,62 @@ class DwollaRestClient {
     // *********************
     // Register Methods
     // *********************
-    public function register($user_id = FALSE)
+    public function register(	$email = FALSE,
+    							$password = FALSE,
+    							$pin = FALSE,
+    							$firstName = FALSE,
+    							$lastName = FALSE,
+    							$address = FALSE,
+    							$address2 = FALSE,
+    							$city = FALSE,
+    							$state = FALSE,
+    							$zip = FALSE,
+    							$phone = FALSE,
+    							$dateOfBirth = FALSE,
+    							$acceptTerms = FALSE,
+    							$type = 'Personal',
+    							$organization = FALSE,
+    							$ein = FALSE
+    						)
     {
-        if(!$user_id) { return $this->_setError('Please pass a user ID.'); }
+        if(!$email) { return $this->_setError('Please enter a valid email address.'); }
+        else if(!$password) { return $this->_setError('Please enter a password.'); }
+        else if(!$pin) { return $this->_setError('Please enter a PIN.'); }
+        else if(!$firstName) { return $this->_setError('Please enter a first name.'); }
+        else if(!$lastName) { return $this->_setError('Please enter a last name.'); }
+        else if(!$address) { return $this->_setError('Please enter an address.'); }
+        else if(!$city) { return $this->_setError('Please enter a city.'); }
+        else if(!$state) { return $this->_setError('Please enter a state.'); }
+        else if(!$zip) { return $this->_setError('Please enter a ZIP code.'); }
+        else if(!$phone) { return $this->_setError('Please enter a phone number.'); }
+        else if(!$dateOfBirth) { return $this->_setError('Please enter a date of birth.'); }
+        else if(!$acceptTerms) { return $this->_setError('Please accept our ToS.'); }
 
         $params = array(
             'client_id'     => $this->apiKey,
-            'client_secret' => $this->apiSecret
+            'client_secret' => $this->apiSecret,
+            'email'			=> $email,
+            'password'		=> $password,
+            'pin'			=> $pin,
+            'firstName'		=> $firstName,
+            'lastName'		=> $lastName,
+            'address'		=> $address,
+            'address2'		=> $address2,
+            'city'			=> $city,
+            'state'			=> $state,
+            'zip'			=> $zip,
+            'phone'			=> $phone,
+            'dateOfBirth'	=> $dateOfBirth,
+            'type'			=> $type,
+            'organization'	=> $organization,
+            'ein'			=> $ein,
+            'acceptTerms'	=> $acceptTerms
         );
-        $response = $this->_post('register', $params);
+        $response = $this->_post('register', $params, FALSE); // FALSE = don't include oAuth token
 
-        $me = $this->_parse($response);
+        $user = $this->_parse($response);
 
-        return $me;
+        return $user;
     }
 
     // *********************
@@ -379,16 +422,23 @@ class DwollaRestClient {
         if(!$response['Success'])
         {
             $this->errorMessage = $response['Message'];
+
+            // Exception for /register method
+            if($response['Response']) {
+	            $this->errorMessage .= " :: " . json_encode($response['Response']);
+            }
+
             return FALSE;
         }
 
         return $response['Response'];
     }
 
-    protected function _post($request, $params = FALSE)
+    protected function _post($request, $params = FALSE, $include_token = TRUE)
     {
-        $params['oauth_token'] = $this->oauthToken;
-        $url = $this->apiServerUrl . $request . "?" . http_build_query($params);
+    	if(substr($request, -1) !== '/') { $request .= '/'; }
+
+        $url = $this->apiServerUrl . $request . ($include_token ? "?oauth_token={$this->oauthToken}" : "");
 
         $rawData = $this->_curl($url, 'POST', $params);
 
@@ -407,17 +457,23 @@ class DwollaRestClient {
 
     protected function _curl($url, $method = 'GET', $params = array())
     {
+    	// Encode POST data
+    	$data = json_encode($params);
+
+    	// Set request headers
+    	$headers = array('Accept: application/json', 'Content-Type: application/json;charset=UTF-8', 'Content-Length: ' . strlen($data));
+
     	// Set up our CURL request
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
         curl_setopt($ch, CURLOPT_HEADER, FALSE);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: application/json', 'Content-type: application/json;charset=UTF-8'));
-        
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
         // Windows require this certificate
         $ca = dirname(__FILE__);
         curl_setopt($ch, CURLOPT_CAINFO, $ca); // Set the location of the CA-bundle
@@ -425,7 +481,7 @@ class DwollaRestClient {
 
         // Initiate request
         $rawData = curl_exec($ch);
-        
+
         // If HTTP response wasn't 200,
         // log it as an error!
 		$code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
