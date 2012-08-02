@@ -436,7 +436,7 @@ class DwollaRestClient {
 
     protected function _post($request, $params = FALSE, $include_token = TRUE)
     {
-    	if(substr($request, -1) !== '/') { $request .= '/'; }
+//    	if(substr($request, -1) !== '/') { $request .= '/'; }
 
         $url = $this->apiServerUrl . $request . ($include_token ? "?oauth_token={$this->oauthToken}" : "");
 

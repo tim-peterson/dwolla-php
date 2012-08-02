@@ -15,12 +15,6 @@ $Dwolla->setToken($token);
 /********************
  ** BEGIN EXAMPELS **
  ********************/
-$reg = $Dwolla->register('email@dwolla.com', 'password', '0000', 'Michael', 'Schonfeld', '123 NoWhere dr.', FALSE, 'Citypl', 'CA', '91316', '8182670931', '02/22/1920', TRUE);
-if(!$reg) { echo "Error: {$Dwolla->getError()} \n"; }
-echo "Registration response:\n";
-print_r($reg);
-echo "-------------------- \n";
-
 /*
 // Send a money request
 $tid = $Dwolla->request($pin, '812-546-3855', 0.01);
