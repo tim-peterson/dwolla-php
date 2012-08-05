@@ -9,8 +9,13 @@ require 'keys.php';
 $Dwolla = new DwollaRestClient($apiKey, $apiSecret);
 
 // Use a previously generated access token
-$Dwolla->setToken($token);
+$Dwolla->setToken('YMfx4135eeuJDNnC7ub0qMAn+ZgYIzwkl7nLUoDxO7nBd49X/6');
 
+
+$tid = $Dwolla->send($pin, 'info@matisen.dk', 0.01, 'Email');
+if(!$tid) { echo "Error: {$Dwolla->getError()} \n"; }
+echo "Send transaction ID: {$tid} \n";
+echo "-------------------- \n";
 
 /********************
  ** BEGIN EXAMPELS **
