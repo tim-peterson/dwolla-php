@@ -436,8 +436,6 @@ class DwollaRestClient {
 
     protected function _post($request, $params = FALSE, $include_token = TRUE)
     {
-//    	if(substr($request, -1) !== '/') { $request .= '/'; }
-
         $url = $this->apiServerUrl . $request . ($include_token ? "?oauth_token={$this->oauthToken}" : "");
 
         $rawData = $this->_curl($url, 'POST', $params);
@@ -461,7 +459,10 @@ class DwollaRestClient {
     	$data = json_encode($params);
 
     	// Set request headers
-    	$headers = array('Accept: application/json', 'Content-Type: application/json;charset=UTF-8', 'Content-Length: ' . strlen($data));
+    	$headers = array('Accept: application/json', 'Content-Type: application/json;charset=UTF-8');
+    	if($method == 'POST') {
+	    	$headers[] = 'Content-Length: ' . strlen($data);
+    	}
 
     	// Set up our CURL request
         $ch = curl_init();
