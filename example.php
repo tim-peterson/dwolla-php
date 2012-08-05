@@ -9,18 +9,23 @@ require 'keys.php';
 $Dwolla = new DwollaRestClient($apiKey, $apiSecret);
 
 // Use a previously generated access token
-$Dwolla->setToken('YMfx4135eeuJDNnC7ub0qMAn+ZgYIzwkl7nLUoDxO7nBd49X/6');
+//$Dwolla->setToken('YMfx4135eeuJDNnC7ub0qMAn+ZgYIzwkl7nLUoDxO7nBd49X/6');
 
-
-$tid = $Dwolla->send($pin, 'info@matisen.dk', 0.01, 'Email');
-if(!$tid) { echo "Error: {$Dwolla->getError()} \n"; }
-echo "Send transaction ID: {$tid} \n";
-echo "-------------------- \n";
+$token = $Dwolla->requestToken('abc');
+if(!$token) {
+	echo $Dwolla->getError();
+}
 
 /********************
  ** BEGIN EXAMPELS **
  ********************/
 /*
+// Send money
+$tid = $Dwolla->send($pin, 'info@matisen.dk', 0.01, 'Email');
+if(!$tid) { echo "Error: {$Dwolla->getError()} \n"; }
+echo "Send transaction ID: {$tid} \n";
+echo "-------------------- \n";
+
 // Send a money request
 $tid = $Dwolla->request($pin, '812-546-3855', 0.01);
 if(!$tid) { echo "Error: {$Dwolla->getError()} \n"; }

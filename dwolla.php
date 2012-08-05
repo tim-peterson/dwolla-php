@@ -44,9 +44,15 @@ class DwollaRestClient {
         $params = array(
             'client_id'     => $this->apiKey,
             'response_type' => 'code',
-            'redirect_uri'  => $this->redirectUri,
             'scope'         => implode('|', $this->permissions)
         );
+
+        // Only append a redirectURI if one
+        // was explicitly specified
+        if($this->redirectUri) {
+	        $params['redirect_uri'] = $this->redirectUri;
+        }
+
         $url = 'https://www.dwolla.com/oauth/v2/authenticate?' . http_build_query($params);
 
         return $url;
