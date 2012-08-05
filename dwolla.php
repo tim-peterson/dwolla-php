@@ -436,7 +436,7 @@ class DwollaRestClient {
 
     protected function _post($request, $params = FALSE, $include_token = TRUE)
     {
-        $url = $this->apiServerUrl . $request . ($include_token ? "?oauth_token={urlencode($this->oauthToken)}" : "");
+        $url = $this->apiServerUrl . $request . ($include_token ? "?oauth_token=" . urlencode($this->oauthToken) : "");
 
         $rawData = $this->_curl($url, 'POST', $params);
 
