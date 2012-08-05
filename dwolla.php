@@ -78,7 +78,7 @@ class DwollaRestClient {
     public function setToken($token) {
         if(!$token) { return $this->_setError('Please pass a token string.'); }
 
-        $this->oauthToken = urlencode($token);
+        $this->oauthToken = $token;
 
         return TRUE;
     }
@@ -436,7 +436,7 @@ class DwollaRestClient {
 
     protected function _post($request, $params = FALSE, $include_token = TRUE)
     {
-        $url = $this->apiServerUrl . $request . ($include_token ? "?oauth_token={$this->oauthToken}" : "");
+        $url = $this->apiServerUrl . $request . ($include_token ? "?oauth_token={urlencode($this->oauthToken)}" : "");
 
         $rawData = $this->_curl($url, 'POST', $params);
 
