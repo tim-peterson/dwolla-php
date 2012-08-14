@@ -1,4 +1,5 @@
 # dwolla-php: PHP Wrapper for Dwolla's API
+=================================================================================
 
 ## Version
 1.0.0
@@ -29,7 +30,7 @@ This repo includes various usage examples, including:
 * Sending money [send.php]
 * Fetching account information [accountInfo.php]
 * Grabbing a user's contacts [contacts.php]
-* Listing a user's funding sources [fundingsources.php]
+* Listing a user's funding sources [fundingSources.php]
 
 ## Credits
 
