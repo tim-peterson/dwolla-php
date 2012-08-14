@@ -21,6 +21,16 @@ Include the dwolla.php in your PHP code
 
     // Send money to a given Dwolla ID
     $transactionId = $Dwolla->send($pin, '812-734-7288', 1.00);
+    
+## Examples
+
+This repo includes various usage examples, including:
+
+* Authenticating with OAuth [oauth.php]
+* Sending money [send.php]
+* Fetching account information [accountInfo.php]
+* Grabbing a user's contacts [contacts.php]
+* Listing a user's funding sources [fundingsources.php]
 
 ## Credits
 
