@@ -488,7 +488,9 @@ class DwollaRestClient {
     protected function _get($request, $params = array())
     {
         $params['oauth_token'] = $this->oauthToken;
-        $url = $this->apiServerUrl . $request . "?" . http_build_query($params);
+        
+        $delimiter = (strpos($request, '?') === FALSE) ? '?' : '&';
+        $url = $this->apiServerUrl . $request . $delimiter . http_build_query($params);
 
         $rawData = $this->_curl($url, 'GET');
 

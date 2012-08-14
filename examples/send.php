@@ -11,6 +11,7 @@ $Dwolla = new DwollaRestClient();
 // Seed a previously generated access token
 $Dwolla->setToken($token);
 
+
 /**
  * EXAMPLE 1: 
  *   Send money ($1.00) to a Dwolla ID 
@@ -21,7 +22,7 @@ else { echo "Send transaction ID: {$transactionId} \n"; } // Print Transaction I
 
 
 /**
- * EXAMPLE 1: 
+ * EXAMPLE 2: 
  *   Send money ($1.00) to an email address, with a note
  **/
 $transactionId = $Dwolla->send($pin, 'michael@dwolla.com', 1.00, 'Email', 'Everyone loves getting money');
