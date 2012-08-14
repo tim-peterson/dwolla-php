@@ -228,6 +228,42 @@ class DwollaRestClient {
     }
 
     // *********************
+    // Funding Sources Methods
+    // *********************
+
+    /**
+     * Fetch the funding sources available
+     * for the given authenticated user
+     *
+     * @return {array} Funding Sources
+     */
+    public function fundingSources()
+    {
+        $response = $this->_get('fundingsources');
+
+        $fundingSources = $this->_parse($response);
+
+        return $fundingSources;
+    }
+
+    /**
+     * Fetch a funding source by
+     * its given ID
+     *
+     * @param {string} Funding Source ID
+     * @return {array} Funding Source Details
+     */
+    public function fundingSource($fundingSourceId)
+    {
+        $response = $this->_get("fundingsources/{$fundingSourceId}");
+
+        $fundingSource = $this->_parse($response);
+
+        return $fundingSource;
+    }
+
+
+    // *********************
     // Balance Methods
     // *********************
     public function balance()
