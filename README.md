@@ -1,4 +1,4 @@
-dwolla-php: PHP Wrapper for Dwolla's API
+# dwolla-php: PHP Wrapper for Dwolla's API
 =================================================================================
 
 ## Version
