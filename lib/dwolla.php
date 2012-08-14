@@ -255,7 +255,7 @@ class DwollaRestClient {
      */
     public function fundingSource($fundingSourceId)
     {
-        $response = $this->_get("fundingsources/{$fundingSourceId}");
+        $response = $this->_get("fundingsources?fundingid={$fundingSourceId}");
 
         $fundingSource = $this->_parse($response);
 
