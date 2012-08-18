@@ -33,9 +33,18 @@ This repo includes various usage examples, including:
 * Listing a user's funding sources [fundingSources.php]
 * Creating offsite gateway sessions [offsiteGateway.php]
 
-## Support & Credits
+## Credits
 
 Michael Schonfeld &lt;michael@dwolla.com&gt;
+
+## Support
+
+Dwolla API &lt;api@dwolla.com&gt;
+Michael Schonfeld &lt;michael@dwolla.com&gt;
+
+## References / Documentation
+
+http://developers.dwolla.com/dev
 
 ## License 
 
