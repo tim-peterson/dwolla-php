@@ -40,6 +40,7 @@ Michael Schonfeld &lt;michael@dwolla.com&gt;
 ## Support
 
 Dwolla API &lt;api@dwolla.com&gt;
+
 Michael Schonfeld &lt;michael@dwolla.com&gt;
 
 ## References / Documentation
