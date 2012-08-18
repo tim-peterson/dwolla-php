@@ -21,19 +21,24 @@ class DwollaRestClient {
 
     private $permissions;
     private $redirectUri;
+    private $mode = 'LIVE'; // Can be 'LIVE' or 'TEST'
+    
+    private $gatewaySession;
 
     private $errorMessage = FALSE; // Store any error messages we get from Dwolla
 
     public function __construct($apiKey = FALSE,
                                 $apiSecret = FALSE,
                                 $redirectUri = FALSE,
-                                $permissions = array("send", "transactions", "balance", "request", "contacts", "accountinfofull"))
+                                $permissions = array("send", "transactions", "balance", "request", "contacts", "accountinfofull"),
+                                $mode = 'LIVE')
     {
         $this->apiKey       = $apiKey;
         $this->apiSecret    = $apiSecret;
         $this->redirectUri  = $redirectUri;
         $this->permissions  = $permissions;
         $this->apiServerUrl = API_SERVER;
+        $this->mode         = $mode;
     }
 
     // ***********************
@@ -437,6 +442,150 @@ class DwollaRestClient {
         return $stats;
     }
 
+    // *********************
+    // Offsite Gateway Method
+    // *********************
+    /**
+     * Clears out any products previously
+     * placed in the offsite gateway session
+     * effectively starting a new session
+     *
+     * @return {boolean} Whether or not the session was cleared
+     */
+    public function startGatewaySession()
+    {
+	    $this->gatewaySession = array();
+
+	    return TRUE;
+    }
+
+    /**
+     * Add a product to the current offsite
+     * gateway session
+     *
+     * @param {string} Product name; (required)
+     * @param {float} Product price; (required)
+     * @param {string} Product description; (optional)
+     * @param {int} Quantity of product; (optional, defaults to 1)
+     *
+     * @return {boolean} Whether or not the product was added succesfully
+     */
+	public function addGatewayProduct($name = FALSE, $amount = FALSE, $description = FALSE, $quantity = 1)
+	{
+        // Verify required paramteres
+        if(!$name) { return $this->_setError('Please enter a product name.'); }
+        else if(!$amount) { return $this->_setError('Please enter an amount.'); }
+
+        $product = array(
+        	'Name'			=> $name,
+        	'Description'	=> $description,
+        	'Price'			=> $amount,
+        	'Quantity'		=> $quantity
+        );
+
+        $this->gatewaySession[] = $product;
+
+        return TRUE;
+	}
+
+    /**
+     * Create an offsite gateway checkout
+     * session
+     *
+     * @param {string} The destination account ID; Can only be a Dwolla ID; (required)
+     * @param {string} Any order ID; (optional)
+     * @param {float} Discount amount; (optional)
+     * @param {float} Shipping amount; (optional)
+     * @param {float} Tax amount; (optional)
+     * @param {string} Notes/memos to be associated with transaction; (optional)
+     * @param {string} A URL to POST the transaction result to; (optional)
+     *
+     * @return {string} The URL for the checkout session
+     */
+     public function getGatewayURL($destinationId, $orderId = FALSE, $discount = FALSE, $shipping = FALSE, $tax = FALSE, $notes = FALSE, $callback = FALSE)
+     {
+        // Verify required paramteres
+        if(!$destinationId) { return $this->_setError('Please enter a Dwolla destination ID.'); }
+
+     	// Normalize optinoal parameters
+     	$destinationId = $this->parseDwollaID($destinationId);
+     	if(!$shipping) { $shipping = 0; } else { $shipping = floatval($shipping); }
+     	if(!$tax) { $tax = 0; } else { $tax = floatval($tax); }
+     	if(!$discount) { $discount = 0; } else { $discount = abs(floatval($discount)); }
+     	if(!$notes) { $notes = ''; }
+
+     	// Calcualte subtotal
+     	$subtotal = 0;
+     	foreach($this->gatewaySession as $product) {
+		    $subtotal += floatval($product['Price']) * floatval($product['Quantity']);
+     	}
+
+     	// Calculate grand total
+     	$total = $subtotal - $discount + $shipping + $tax;
+
+     	// Create request body
+		$request = array(
+			'Key'       => $this->apiKey,
+			'Secret'    => $this->apiSecret,
+			'Test'      => ($this->mode == 'TEST') ? 'true' : 'false',
+			'PurchaseOrder' => array(
+				'DestinationId' => $destinationId,
+				'OrderItems'    => $this->gatewaySession,
+				'Discount'      => -$discount,
+				'Shipping'      => $shipping,
+				'Tax'           => $tax,
+				'Total'			=> $total,
+				'Notes'         => $notes
+			)
+		);
+
+		// Append optional parameters
+		if($this->redirectUri) { $request['Redirect'] = $this->redirectUri; }
+		if($callback) { $request['Callback'] = $callback; }
+		if($orderId) { $request['OrderId'] = $orderId; }
+
+		// Send off the request
+		$response = $this->_curl('https://www.dwolla.com/payment/request', 'POST', $request);
+		if($response['Result'] != 'Success') {
+			$this->errorMessage = $response['Message'];
+			return FALSE;
+		}
+
+		return 'https://www.dwolla.com/payment/checkout/' . $response['CheckoutId'];
+	}
+
+    /**
+     * Verify a signature that came back
+     * with an offsite gateway redirect
+     *
+     * @param {string} Proposed signature; (required)
+     * @param {string} Dwolla's checkout ID; (required)
+     * @param {string} Dwolla's reported total amount; (required)
+     *
+     * @return {boolean} Whether or not the signature is valid
+     */
+	public function verifyGatewaySignature($signature = FALSE, $checkoutId = FALSE, $amount = FALSE)
+	{
+        // Verify required paramteres
+        if(!$signature) { return $this->_setError('Please pass a proposed signature.'); }
+        if(!$checkoutId) { return $this->_setError('Please pass a checkout ID.'); }
+        if(!$amount) { return $this->_setError('Please pass a total transaction amount.'); }
+
+		// Normalize parameters
+		$amount = floatval($amount);
+		
+		// Calculate an HMAC-SHA1 hexadecimal hash
+		// of the checkoutId and amount ampersand separated
+		// using the consumer secret of the application
+		// as the hash key.
+		//
+		// @doc: http://developers.dwolla.com/dev/docs/gateway
+        $hash = hash_hmac("sha1", "{$checkoutId}&{$amount}", $this->apiSecret);
+
+        return $hash == $signature;
+	}
+
+
     // ***************
     // Public methods
     // ***************
@@ -448,6 +597,25 @@ class DwollaRestClient {
         $this->errorMessage = FALSE;
 
         return $error;
+    }
+    
+    public function parseDwollaID($id)
+    {
+	    $id = preg_replace("/[^0-9]/", "", $id);
+	    $id = preg_replace("/([0-9]{3})([0-9]{3})([0-9]{4})/", "$1-$2-$3", $id);
+
+	    return $id;
+    }
+    
+    public function setMode($mode = 'LIVE')
+    {
+    	if($mode != 'LIVE' && $mode != 'TEST') {
+	    	return FALSE;
+    	}
+
+	    $this->mode = $mode;
+
+	    return TRUE;
     }
 
     // ********************
