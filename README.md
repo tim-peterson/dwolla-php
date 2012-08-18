@@ -31,8 +31,9 @@ This repo includes various usage examples, including:
 * Fetching account information [accountInfo.php]
 * Grabbing a user's contacts [contacts.php]
 * Listing a user's funding sources [fundingSources.php]
+* Creating offsite gateway sessions [offsiteGateway.php]
 
-## Credits
+## Support & Credits
 
 Michael Schonfeld &lt;michael@dwolla.com&gt;
 
