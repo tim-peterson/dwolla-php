@@ -50,12 +50,12 @@ Users Methods:
     
 Register Methods:
 
-    register()          
+    register($email, $password, $pin, $firstName, $lastName, $address, $address2, $city, $state, $zip, $phone, $dateOfBirth, $acceptTerms[, $type, $organization, $ein])    ==> (array) the newly created user record
     
 Contacts Methods:
 
-    contacts([$search, $types, $limit])         ==> (array) 
-    nearbyContacts([$search, $types, $limit])   ==> (array) 
+    contacts([$search, $types, $limit])         ==> (array) list of contacts matching the search criteria
+    nearbyContacts([$search, $types, $limit])   ==> (array) list of nearby spots matching the search criteria
     
 Funding Sources Methods:
 
