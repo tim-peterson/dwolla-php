@@ -64,16 +64,16 @@ Transactions Methods:
     
 Offsite Gateway Method:
 
-    startGatewaySession()
-    addGatewayProduct()
-    getGatewayURL()
-    verifyGatewaySignature()
+    startGatewaySession()       ==> (bool) did session start?
+    addGatewayProduct()         ==> (bool) was product added?
+    getGatewayURL()             ==> (string) checkout URL
+    verifyGatewaySignature()    ==> (bool) is signature valid?
     
 Helper methods
 
-    getError()
-    parseDwollaID()
-    setMode()
+    getError()          ==> (string) error message
+    parseDwollaID($id)  ==> (bool) is valid Dwolla ID?
+    setMode($mode)      ==> (bool) did mode change?
 
 ## Examples
 
