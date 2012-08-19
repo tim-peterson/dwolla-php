@@ -1,10 +1,6 @@
 # dwolla-php: PHP Wrapper for Dwolla's API
 =================================================================================
 
-## Introduction
-
-...
-
 ## Version
 
 1.0.0
@@ -26,6 +22,17 @@ Include the dwolla.php in your PHP code
 
     // Send money to a given Dwolla ID
     $transactionId = $Dwolla->send($pin, '812-734-7288', 1.00);
+
+## Examples / Quickstart
+
+This repo includes various usage examples, including:
+
+* Authenticating with OAuth [oauth.php]
+* Sending money [send.php]
+* Fetching account information [accountInfo.php]
+* Grabbing a user's contacts [contacts.php]
+* Listing a user's funding sources [fundingSources.php]
+* Creating offsite gateway sessions [offsiteGateway.php]
 
 ## Methods
 
@@ -79,17 +86,6 @@ Helper methods
     getError()          ==> (string) error message
     parseDwollaID($id)  ==> (bool) is valid Dwolla ID?
     setMode($mode)      ==> (bool) did mode change?
-
-## Examples
-
-This repo includes various usage examples, including:
-
-* Authenticating with OAuth [oauth.php]
-* Sending money [send.php]
-* Fetching account information [accountInfo.php]
-* Grabbing a user's contacts [contacts.php]
-* Listing a user's funding sources [fundingSources.php]
-* Creating offsite gateway sessions [offsiteGateway.php]
 
 ## Credits
 
