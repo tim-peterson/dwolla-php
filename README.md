@@ -38,7 +38,7 @@ Users Methods:
     
 Register Methods:
 
-    register()
+    register()          
     
 Contacts Methods:
 
@@ -47,12 +47,12 @@ Contacts Methods:
     
 Funding Sources Methods:
 
-    fundingSources()
-    fundingSource()
+    fundingSources()    ==> (array) a list of funding sources associated with the token
+    fundingSource($id)  ==> (array) information about the {$id} funding source
     
 Balance Methods:
 
-    balance()
+    balance()           ==> (string) the Dwolla balance of the account associated with the token
     
 Transactions Methods:
 
