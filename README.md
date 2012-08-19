@@ -15,14 +15,14 @@
 Include the dwolla.php in your PHP code
 
 ## Usage
+```php
+require 'dwolla.php';
+$Dwolla = new DwollaRestClient();
+$Dwolla->setToken('[OAuth Token Goes Here]');
 
-    require 'dwolla.php';
-    $Dwolla = new DwollaRestClient();
-    $Dwolla->setToken('[OAuth Token Goes Here]');
-
-    // Send money to a given Dwolla ID
-    $transactionId = $Dwolla->send($pin, '812-734-7288', 1.00);
-
+// Send money to a given Dwolla ID
+$transactionId = $Dwolla->send('[PIN]', '812-734-7288', 1.00);
+```
 ## Examples / Quickstart
 
 This repo includes various usage examples, including:
