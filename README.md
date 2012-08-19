@@ -26,15 +26,15 @@ Include the dwolla.php in your PHP code
 
 Authentication Methods:
 
-    getAuthUrl()
-    requestToken($code)
-    setToken($token)
-    getToken()
+    getAuthUrl()        ==> (string) OAuth permissions page URL
+    requestToken($code) ==> (string) a never-expiring OAuth access token
+    setToken($token)    ==> (bool) was token saved?
+    getToken()          ==> (string) current OAuth token
 
 Users Methods:
 
-    me()
-    getUser($user_id)
+    me()                ==> (array) the user entity associated with the token
+    getUser($user_id)   ==> (array) the user entity for {$user_id}
     
 Register Methods:
 
