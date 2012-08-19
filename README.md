@@ -56,11 +56,11 @@ Balance Methods:
     
 Transactions Methods:
 
-    send()
-    request()
-    transaction()
-    listings()
-    stats()
+    send($pin, $destinationId, $amount[, $destinationType, $notes, $facilitatorAmount, $assumeCosts])   ==> (string) transaction ID
+    request($pin, $sourceId, $amount[, $sourceType, $notes, $facilitatorAmount])                        ==> (string) request ID
+    transaction($transactionId)                     ==> (array) transaction details
+    listings([$sinceDate, $types, $limit, $skip])   ==> (array) 
+    stats([$types, $sinceDate, $endDate])           ==> (array) 
     
 Offsite Gateway Method:
 
