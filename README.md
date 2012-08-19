@@ -74,14 +74,14 @@ Transactions Methods:
     listings([$sinceDate, $types, $limit, $skip])   ==> (array) a list of recent transactions matching the search criteria
     stats([$types, $sinceDate, $endDate])           ==> (array) statistics about the account associated with the token
     
-Offsite Gateway Method:
+Offsite Gateway Methods:
 
     startGatewaySession()                                           ==> (bool) did session start?
     addGatewayProduct($name, $amount[, $description, $quantity])    ==> (bool) was product added?
     verifyGatewaySignature($signature, $checkoutId, $amount)        ==> (bool) is signature valid?
     getGatewayURL($destinationId[, $orderId, $discount, $shipping, $tax, $notes, $callback])    ==> (string) checkout URL
     
-Helper methods
+Helper Methods:
 
     getError()          ==> (string) error message
     parseDwollaID($id)  ==> (bool) is valid Dwolla ID?
