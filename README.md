@@ -71,8 +71,8 @@ Transactions Methods:
     send($pin, $destinationId, $amount[, $destinationType, $notes, $facilitatorAmount, $assumeCosts])   ==> (string) transaction ID
     request($pin, $sourceId, $amount[, $sourceType, $notes, $facilitatorAmount])                        ==> (string) request ID
     transaction($transactionId)                     ==> (array) transaction details
-    listings([$sinceDate, $types, $limit, $skip])   ==> (array) 
-    stats([$types, $sinceDate, $endDate])           ==> (array) 
+    listings([$sinceDate, $types, $limit, $skip])   ==> (array) a list of recent transactions matching the search criteria
+    stats([$types, $sinceDate, $endDate])           ==> (array) statistics about the account associated with the token
     
 Offsite Gateway Method:
 
