@@ -64,10 +64,10 @@ Transactions Methods:
     
 Offsite Gateway Method:
 
-    startGatewaySession()       ==> (bool) did session start?
+    startGatewaySession()                                           ==> (bool) did session start?
     addGatewayProduct($name, $amount[, $description, $quantity])    ==> (bool) was product added?
     getGatewayURL($destinationId[, $orderId, $discount, $shipping, $tax, $notes, $callback])    ==> (string) checkout URL
-    verifyGatewaySignature($signature, $checkoutId, $amount)    ==> (bool) is signature valid?
+    verifyGatewaySignature($signature, $checkoutId, $amount)        ==> (bool) is signature valid?
     
 Helper methods
 
