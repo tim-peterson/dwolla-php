@@ -21,7 +21,60 @@ Include the dwolla.php in your PHP code
 
     // Send money to a given Dwolla ID
     $transactionId = $Dwolla->send($pin, '812-734-7288', 1.00);
+
+## Methods
+
+Authentication Methods:
+
+    getAuthUrl()
+    requestToken($code)
+    setToken($token)
+    getToken()
+
+Users Methods:
+
+    me()
+    getUser($user_id)
     
+Register Methods:
+
+    register()
+    
+Contacts Methods:
+
+    contacts()
+    nearbyContacts()
+    
+Funding Sources Methods:
+
+    fundingSources()
+    fundingSource()
+    
+Balance Methods:
+
+    balance()
+    
+Transactions Methods:
+
+    send()
+    request()
+    transaction()
+    listings()
+    stats()
+    
+Offsite Gateway Method:
+
+    startGatewaySession()
+    addGatewayProduct()
+    getGatewayURL()
+    verifyGatewaySignature()
+    
+Helper methods
+
+    getError()
+    parseDwollaID()
+    setMode()
+
 ## Examples
 
 This repo includes various usage examples, including:
@@ -39,8 +92,8 @@ Michael Schonfeld &lt;michael@dwolla.com&gt;
 
 ## Support
 
-Dwolla API &lt;api@dwolla.com&gt;
-Michael Schonfeld &lt;michael@dwolla.com&gt;
+- Dwolla API &lt;api@dwolla.com&gt;
+- Michael Schonfeld &lt;michael@dwolla.com&gt;
 
 ## References / Documentation
 

@@ -30,7 +30,7 @@ class DwollaRestClient {
     public function __construct($apiKey = FALSE,
                                 $apiSecret = FALSE,
                                 $redirectUri = FALSE,
-                                $permissions = array("send", "transactions", "balance", "request", "contacts", "accountinfofull"),
+                                $permissions = array("send", "transactions", "balance", "request", "contacts", "accountinfofull", "funding"),
                                 $mode = 'LIVE')
     {
         $this->apiKey       = $apiKey;
