@@ -1,7 +1,12 @@
 # dwolla-php: PHP Wrapper for Dwolla's API
 =================================================================================
 
+## Introduction
+
+...
+
 ## Version
+
 1.0.0
 
 ## Requirements
