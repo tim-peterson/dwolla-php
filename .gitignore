@@ -1,2 +1,5 @@
 keys.php
 demo/
+nbproject/
+*.un~
+tests/config.php
