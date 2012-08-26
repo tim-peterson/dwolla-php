@@ -3,3 +3,4 @@ demo/
 nbproject/
 *.un~
 tests/config.php
+examples/_keys.php
