@@ -1,0 +1,29 @@
+{
+    "name": "dwolla/dwolla-php",
+    "description": "Official PHP Wrapper for Dwolla's API",
+    "keywords": ["API", "payment", "dwolla"],
+    "homepage": "http://developers.dwolla.com/dev",
+    "license": "MIT",
+    "version" : "1.0.0",
+    "authors": [
+    {
+        "name": "Michael Schonfeld",
+        "email": "michael@dwolla.com",
+        "homepage": "http://dwolla.com"
+    }
+    ],
+    "repositories": [
+    {
+        "type": "vcs",
+        "url": "https://github.com/jeremykendall/dwolla-php"
+    }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "ext-json": "*",
+        "ext-curl": "*"
+    },
+    "autoload": {
+        "classmap": ["lib/", "dwolla.php"]
+    }
+}
