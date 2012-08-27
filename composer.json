@@ -24,6 +24,6 @@
         "ext-curl": "*"
     },
     "autoload": {
-        "classmap": ["lib/", "dwolla.php"]
+        "files": ["lib/dwolla.php"]
     }
 }
