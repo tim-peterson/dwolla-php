@@ -119,8 +119,8 @@ class DwollaRestClient {
     }
 
     /**
-     * Grabsc the basic account information for
-     * the given Dwollaaccount ID
+     * Grabs the basic account information for
+     * the given Dwolla account ID
      *
      * @param {string/int} Dwolla Account ID
      * @return {array} Basic account information
