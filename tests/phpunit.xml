@@ -1,4 +1,4 @@
-<phpunit bootstrap="./bootstrap.php" colors="true">
+<phpunit bootstrap="./bootstrap.php" colors="true" verbose="true">
     
     <testsuite name="Dwolla PHP API Test Suite">
         <directory>./lib</directory>
