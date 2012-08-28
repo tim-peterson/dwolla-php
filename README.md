@@ -17,16 +17,9 @@ composer](http://getcomposer.org). Just create a `composer.json` file and
 run the `php composer.phar install` command to install it:
 
     {
-        "repositories": [
-        {
-            "type": "vcs",
-            "url": "http://github.com/Dwolla/dwolla-php"
-        }
-        ],
         "require": {
-            "dwolla/dwolla-php": "*"
-        },
-        "minimum-stability": "dev"
+            "dwolla/dwolla-php": "1.1.0"
+        }
     }
 
 Alternatively, you can simply include dwolla.php in your PHP code
