@@ -4,18 +4,11 @@
     "keywords": ["API", "payment", "dwolla"],
     "homepage": "http://developers.dwolla.com/dev",
     "license": "MIT",
-    "version" : "1.0.0",
     "authors": [
     {
         "name": "Michael Schonfeld",
         "email": "michael@dwolla.com",
         "homepage": "http://dwolla.com"
-    }
-    ],
-    "repositories": [
-    {
-        "type": "vcs",
-        "url": "https://github.com/Dwolla/dwolla-php"
     }
     ],
     "require": {
