@@ -114,7 +114,7 @@ Helper Methods:
 ## Credits
 
 - Michael Schonfeld &lt;michael@dwolla.com&gt;
-- Jeremy Kendall &lt;jeremy@jeremykendall.net&gt;
+- Jeremy Kendall &lt;http://about.me/jeremykendall&gt;
 
 ## Support
 
