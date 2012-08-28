@@ -104,16 +104,6 @@ Helper Methods:
     parseDwollaID($id)  ==> (bool) is valid Dwolla ID?
     setMode($mode)      ==> (bool) did mode change?
 
-## Credits
-
-Michael Schonfeld &lt;michael@dwolla.com&gt;
-Jeremy Kendall
-
-## Support
-
-- Dwolla API &lt;api@dwolla.com&gt;
-- Michael Schonfeld &lt;michael@dwolla.com&gt;
-
 ## Changelog
 
 1.1.0 (Thanks to Jeremy Kendall!)
@@ -127,6 +117,16 @@ Jeremy Kendall
 * Added support for Dwolla's offsite gateway
 * Refactored methods
 * Extended documentation
+
+## Credits
+
+Michael Schonfeld &lt;michael@dwolla.com&gt;
+Jeremy Kendall
+
+## Support
+
+- Dwolla API &lt;api@dwolla.com&gt;
+- Michael Schonfeld &lt;michael@dwolla.com&gt;
 
 ## References / Documentation
 
