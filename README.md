@@ -3,7 +3,7 @@
 
 ## Version
 
-1.0.0
+1.1.0
 
 ## Requirements
 - [PHP](http://www.php.net/)
@@ -107,11 +107,26 @@ Helper Methods:
 ## Credits
 
 Michael Schonfeld &lt;michael@dwolla.com&gt;
+Jeremy Kendall
 
 ## Support
 
 - Dwolla API &lt;api@dwolla.com&gt;
 - Michael Schonfeld &lt;michael@dwolla.com&gt;
+
+## Changelog
+
+1.1.0 (Thanks to Jeremy Kendall!)
+
+* Added tests
+* Added support for composer
+* Renamed _keys.php to _keys.dist.php
+
+1.0.0
+
+* Added support for Dwolla's offsite gateway
+* Refactored methods
+* Extended documentation
 
 ## References / Documentation
 

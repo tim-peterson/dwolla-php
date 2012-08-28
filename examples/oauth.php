@@ -7,7 +7,7 @@ require '_keys.php';
 
 // OAuth parameters
 $redirectUri = 'http://localhost:8888/oauth.php'; // Point back to this file/URL
-$permissions = array("Send", "Transactions", "Balance", "Request", "Contacts", "AccountInfoFull");
+$permissions = array("Send", "Transactions", "Balance", "Request", "Contacts", "AccountInfoFull", "Funding");
 
 // Instantiate a new Dwolla REST Client
 $Dwolla = new DwollaRestClient($apiKey, $apiSecret, $redirectUri, $permissions);
