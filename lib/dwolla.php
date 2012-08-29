@@ -32,6 +32,14 @@
  * @link      http://www.dwolla.com
  */
 
+if (!function_exists('curl_init')) { 
+    throw new Exception("Dwolla's API Client Library requires the CURL PHP extension.");
+}
+
+if (!function_exists('json_decode')) {
+    throw new Exception("Dwolla's API Client Library requires the JSON PHP extension.");
+}
+
 /**
  * Dwolla REST API Library for PHP
  *
