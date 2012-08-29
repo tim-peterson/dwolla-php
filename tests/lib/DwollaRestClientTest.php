@@ -21,7 +21,7 @@ class DwollaRestClientTest extends \PHPUnit_Framework_TestCase
                 $this->config['apiSecret'],
                 $this->config['redirectUri'],
                 $permissions = array("send", "transactions", "balance", "request", "contacts", "accountinfofull", "funding"),
-                $mode = 'TEST'
+                'test'
         );
     }
 
@@ -127,6 +127,27 @@ class DwollaRestClientTest extends \PHPUnit_Framework_TestCase
         $balance = $this->client->balance();
         $this->assertInternalType('float', $balance);
         $this->markTestIncomplete('Provide more assertions once a test user is provided');
+    }
+    
+    public function testParseDwollaId()
+    {
+        $id = '1234567890';
+        $this->assertEquals('123-456-7890', $this->client->parseDwollaID($id));
+        
+        $id = 'id=123,456.7890';
+        $this->assertEquals('123-456-7890', $this->client->parseDwollaID($id));
+    }
+    
+    public function testSetModeThrowsExceptionIfNotLiveOrTest()
+    {
+        $this->setExpectedException('InvalidArgumentException', 'Appropriate mode values are live or test');
+        $this->client->setMode('whatever');
+    }
+    
+    public function testSetModeOKWithAppropriateValue()
+    {
+        $this->client->setMode('test');
+        $this->assertEquals('test', $this->client->getMode());
     }
 
 }
