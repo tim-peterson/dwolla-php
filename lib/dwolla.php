@@ -1,61 +1,135 @@
 <?php
+
 /**
  * Dwolla REST API Library for PHP
  *
- * @description Dwolla - PHP Client API Library
- * @copyright   Copyright (c) 2012 Dwolla Inc. (http://www.dwolla.com)
- * @autor       Michael Schonfeld <michael@dwolla.com>
- * @version     1.0.0
- * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ * MIT LICENSE
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * 
+ * @package   Dwolla
+ * @author    Michael Schonfeld <michael@dwolla.com>
+ * @copyright Copyright (c) 2012 Dwolla Inc. (http://www.dwolla.com)
+ * @license   http://opensource.org/licenses/MIT MIT
+ * @version   1.1.0
+ * @link      http://www.dwolla.com
  */
 
-define ("API_SERVER", "https://www.dwolla.com/oauth/rest/");
+if (!function_exists('curl_init')) { 
+    throw new Exception("Dwolla's API Client Library requires the CURL PHP extension.");
+}
 
-if (!function_exists('curl_init'))  throw new Exception("Dwolla's API Client Library requires the CURL PHP extension.");
-if (!function_exists('json_decode')) throw new Exception("Dwolla's API Client Library requires the JSON PHP extension.");
+if (!function_exists('json_decode')) {
+    throw new Exception("Dwolla's API Client Library requires the JSON PHP extension.");
+}
 
-class DwollaRestClient {
+/**
+ * Dwolla REST API Library for PHP
+ *
+ * @package   Dwolla
+ * @author    Michael Schonfeld <michael@dwolla.com>
+ * @copyright Copyright (c) 2012 Dwolla Inc. (http://www.dwolla.com)
+ * @license   http://opensource.org/licenses/MIT MIT
+ */
+class DwollaRestClient
+{
+
+    /**
+     * @var string Dwolla API key
+     */
     private $apiKey;
+
+    /**
+     * @var string Dwolla API key
+     */
     private $apiSecret;
+
+    /**
+     * @var string oauth token
+     */
     private $oauthToken;
 
+    /**
+     * @var array oauth authentication scopes
+     */
     private $permissions;
+
+    /**
+     *
+     * @var string URL to return the user to after the authentication request
+     */
     private $redirectUri;
-    private $mode = 'LIVE'; // Can be 'LIVE' or 'TEST'
-    
+
+    /**
+     * @var string Transaction mode. Can be 'live' or 'test'
+     */
+    private $mode;
+
+    /**
+     * @var array Off-Site Gateway order items
+     */
     private $gatewaySession;
 
-    private $errorMessage = FALSE; // Store any error messages we get from Dwolla
+    /**
+     * @var string error messages returned from Dwolla
+     */
+    private $errorMessage = false;
 
-    public function __construct($apiKey = FALSE,
-                                $apiSecret = FALSE,
-                                $redirectUri = FALSE,
-                                $permissions = array("send", "transactions", "balance", "request", "contacts", "accountinfofull", "funding"),
-                                $mode = 'LIVE')
+    const API_SERVER = "https://www.dwolla.com/oauth/rest/";
+
+    /**
+     * Sets the initial state of the client
+     * 
+     * @param string $apiKey
+     * @param string $apiSecret
+     * @param string $redirectUri
+     * @param array $permissions
+     * @param string $mode 
+     * @throws InvalidArgumentException
+     */
+    public function __construct($apiKey = false, $apiSecret = false, $redirectUri = false, $permissions = array("send", "transactions", "balance", "request", "contacts", "accountinfofull", "funding"), $mode = 'live')
     {
-        $this->apiKey       = $apiKey;
-        $this->apiSecret    = $apiSecret;
-        $this->redirectUri  = $redirectUri;
-        $this->permissions  = $permissions;
-        $this->apiServerUrl = API_SERVER;
-        $this->mode         = $mode;
+        $this->apiKey = $apiKey;
+        $this->apiSecret = $apiSecret;
+        $this->redirectUri = $redirectUri;
+        $this->permissions = $permissions;
+        $this->apiServerUrl = self::API_SERVER;
+        $this->setMode($mode);
     }
 
-    // ***********************
-    // Authentication Methods
-    // ***********************
+    /**
+     * Get oauth authenitcation URL
+     * 
+     * @return string URL
+     */
     public function getAuthUrl()
     {
         $params = array(
-            'client_id'     => $this->apiKey,
+            'client_id' => $this->apiKey,
             'response_type' => 'code',
-            'scope'         => implode('|', $this->permissions)
+            'scope' => implode('|', $this->permissions)
         );
 
-        // Only append a redirectURI if one
-        // was explicitly specified
-        if($this->redirectUri) {
-	        $params['redirect_uri'] = $this->redirectUri;
+        // Only append a redirectURI if one was explicitly specified
+        if ($this->redirectUri) {
+            $params['redirect_uri'] = $this->redirectUri;
         }
 
         $url = 'https://www.dwolla.com/oauth/v2/authenticate?' . http_build_query($params);
@@ -63,496 +137,473 @@ class DwollaRestClient {
         return $url;
     }
 
+    /**
+     * Request oauth token from Dwolla
+     * 
+     * @param string $code Temporary code returned from Dwolla
+     * @return string oauth token
+     */
     public function requestToken($code)
     {
-        if(!$code) { return $this->_setError('Please pass an oauth code.'); }
+        if (!$code) {
+            return $this->setError('Please pass an oauth code.');
+        }
 
         $params = array(
-            'client_id'     => $this->apiKey,
+            'client_id' => $this->apiKey,
             'client_secret' => $this->apiSecret,
-            'redirect_uri'  => $this->redirectUri,
-            'grant_type'    => 'authorization_code',
-            'code'          => $code
+            'redirect_uri' => $this->redirectUri,
+            'grant_type' => 'authorization_code',
+            'code' => $code
         );
-        $url = 'https://www.dwolla.com/oauth/v2/token?'  . http_build_query($params);
-        $response = $this->_curl($url, 'GET');
+        $url = 'https://www.dwolla.com/oauth/v2/token?' . http_build_query($params);
+        $response = $this->curl($url, 'GET');
 
-        if(isset($response['error']))
-        {
+        if (isset($response['error'])) {
             $this->errorMessage = $response['error_description'];
-            return FALSE;
+            return false;
         }
 
         return $response['access_token'];
     }
 
-    public function setToken($token) {
-        if(!$token) { return $this->_setError('Please pass a token string.'); }
-
-        $this->oauthToken = $token;
-
-        return TRUE;
-    }
-
-    public function getToken() {
-        return $this->oauthToken;
-    }
-
-    // ******************
-    // Users Methods
-    // ******************
-    
     /**
      * Grabs the account information for the
      * authenticated user
      *
-     * @param  {}
-     * @return {array} Account information
+     * @return array Authenticated user's account information
      */
     public function me()
     {
-        $response = $this->_get('users');
-
-        $me = $this->_parse($response);
-
-        return $me;
+        $response = $this->get('users');
+        return $this->parse($response);
     }
 
     /**
      * Grabs the basic account information for
-     * the given Dwolla account ID
-     *
-     * @param {string/int} Dwolla Account ID
-     * @return {array} Basic account information
+     * the provided Dwolla account Id
+     * 
+     * @param string $userId Dwolla Account Id
+     * @return array Basic account information 
      */
-    public function getUser($user_id = FALSE)
+    public function getUser($userId)
     {
-        if(!$user_id) { return $this->_setError('Please pass a user ID.'); }
-
         $params = array(
-            'client_id'     => $this->apiKey,
+            'client_id' => $this->apiKey,
             'client_secret' => $this->apiSecret
         );
-        $response = $this->_get("users/{$user_id}", $params);
 
-        $user = $this->_parse($response);
-
-        return $user;
-    }
-
-    // *********************
-    // Register Methods
-    // *********************
-    public function register(	$email = FALSE,
-    							$password = FALSE,
-    							$pin = FALSE,
-    							$firstName = FALSE,
-    							$lastName = FALSE,
-    							$address = FALSE,
-    							$address2 = FALSE,
-    							$city = FALSE,
-    							$state = FALSE,
-    							$zip = FALSE,
-    							$phone = FALSE,
-    							$dateOfBirth = FALSE,
-    							$acceptTerms = FALSE,
-    							$type = 'Personal',
-    							$organization = FALSE,
-    							$ein = FALSE
-    						)
-    {
-        if(!$email) { return $this->_setError('Please enter a valid email address.'); }
-        else if(!$password) { return $this->_setError('Please enter a password.'); }
-        else if(!$pin) { return $this->_setError('Please enter a PIN.'); }
-        else if(!$firstName) { return $this->_setError('Please enter a first name.'); }
-        else if(!$lastName) { return $this->_setError('Please enter a last name.'); }
-        else if(!$address) { return $this->_setError('Please enter an address.'); }
-        else if(!$city) { return $this->_setError('Please enter a city.'); }
-        else if(!$state) { return $this->_setError('Please enter a state.'); }
-        else if(!$zip) { return $this->_setError('Please enter a ZIP code.'); }
-        else if(!$phone) { return $this->_setError('Please enter a phone number.'); }
-        else if(!$dateOfBirth) { return $this->_setError('Please enter a date of birth.'); }
-        else if(!$acceptTerms) { return $this->_setError('Please accept our ToS.'); }
-
-        $params = array(
-            'client_id'     => $this->apiKey,
-            'client_secret' => $this->apiSecret,
-            'email'			=> $email,
-            'password'		=> $password,
-            'pin'			=> $pin,
-            'firstName'		=> $firstName,
-            'lastName'		=> $lastName,
-            'address'		=> $address,
-            'address2'		=> $address2,
-            'city'			=> $city,
-            'state'			=> $state,
-            'zip'			=> $zip,
-            'phone'			=> $phone,
-            'dateOfBirth'	=> $dateOfBirth,
-            'type'			=> $type,
-            'organization'	=> $organization,
-            'ein'			=> $ein,
-            'acceptTerms'	=> $acceptTerms
-        );
-        $response = $this->_post('register', $params, FALSE); // FALSE = don't include oAuth token
-
-        $user = $this->_parse($response);
+        $response = $this->get("users/{$userId}", $params);
+        $user = $this->parse($response);
 
         return $user;
     }
-
-    // *********************
-    // Contacts Methods
-    // *********************
-    public function contacts($search = FALSE, $types = array('Dwolla'), $limit = 10)
-    {
-        $params = array(
-            'search'    => $search,
-            'types'     => implode(',', $types),
-            'limit'     => $limit
-        );
-        $response = $this->_get('contacts', $params);
-
-        $contacts = $this->_parse($response);
-
-        return $contacts;
-    }
-
-    public function nearbyContacts($search = FALSE, $types = array('Dwolla'), $limit = 10)
-    {
-        $params = array(
-            'search'    => $search,
-            'types'     => implode(',', $types),
-            'limit'     => $limit
-        );
-        $response = $this->_get('contacts', $params);
-
-        $contacts = $this->_parse($response);
-
-        return $contacts;
-    }
-
-    // *********************
-    // Funding Sources Methods
-    // *********************
 
     /**
-     * Fetch the funding sources available
-     * for the given authenticated user
+     * Register new Dwolla user
+     *  
+     * @param string $email
+     * @param string $password
+     * @param int $pin
+     * @param string $firstName
+     * @param string $lastName
+     * @param string $address
+     * @param string $city
+     * @param string $state
+     * @param int $zip
+     * @param string $phone
+     * @param string $dateOfBirth
+     * @param bool $acceptTerms
+     * @param string $address2
+     * @param string $type Dwolla account type
+     * @param string $organization
+     * @param string $ein
+     * @return array New user information 
+     */
+    public function register($email, $password, $pin, $firstName, $lastName, $address, $city, $state, $zip, $phone, $dateOfBirth, $acceptTerms, $address2 = '', $type = 'Personal', $organization = '', $ein = ''
+    )
+    {
+        $params = array(
+            'client_id' => $this->apiKey,
+            'client_secret' => $this->apiSecret,
+            'email' => $email,
+            'password' => $password,
+            'pin' => $pin,
+            'firstName' => $firstName,
+            'lastName' => $lastName,
+            'address' => $address,
+            'address2' => $address2,
+            'city' => $city,
+            'state' => $state,
+            'zip' => $zip,
+            'phone' => $phone,
+            'dateOfBirth' => $dateOfBirth,
+            'type' => $type,
+            'organization' => $organization,
+            'ein' => $ein,
+            'acceptTerms' => $acceptTerms
+        );
+        $response = $this->post('register', $params, false); // false = don't include oAuth token
+
+        $user = $this->parse($response);
+
+        return $user;
+    }
+
+    /**
+     * Search contacts
+     * 
+     * @param string $search Search term(s)
+     * @param array $types Types of contacts (Dwolla, Facebook . . .)
+     * @param int $limit Number of contacts to retrieve between 1 and 200. 
+     * @return array
+     */
+    public function contacts($search = false, $types = array('Dwolla'), $limit = 10)
+    {
+        $params = array(
+            'search' => $search,
+            'types' => implode(',', $types),
+            'limit' => $limit
+        );
+        $response = $this->get('contacts', $params);
+
+        $contacts = $this->parse($response);
+
+        return $contacts;
+    }
+
+    /**
+     * Use this method to retrieve nearby Dwolla spots within the range of the 
+     * provided latitude and longitude. 
+     * 
+     * Half of the limit are returned as spots with closest proximity. The other 
+     * half of the spots are returned as random spots within the range.
+     * 
+     * @todo implement
+     * 
+     * @param float $latitude
+     * @param float $longitude
+     * @param int $range Range to search in miles
+     * @param int $limit Limit search to this number results
+     * @return array Search results 
+     */
+    public function nearbyContacts($latitude, $longitude, $range = 10, $limit = 10)
+    {
+        // TODO implement
+        return null;
+    }
+
+    /**
+     * Retrieve a list of verified funding sources for the user associated 
+     * with the authorized access token.
      *
-     * @return {array} Funding Sources
+     * @return array Funding Sources
      */
     public function fundingSources()
     {
-        $response = $this->_get('fundingsources');
-
-        $fundingSources = $this->_parse($response);
-
-        return $fundingSources;
+        $response = $this->get('fundingsources');
+        return $this->parse($response);
     }
 
     /**
-     * Fetch a funding source by
-     * its given ID
+     * Retrieve a verified funding source by identifier for the user associated 
+     * with the authorized access token.
      *
-     * @param {string} Funding Source ID
-     * @return {array} Funding Source Details
+     * @param string Funding Source ID
+     * @return array Funding Source Details
      */
     public function fundingSource($fundingSourceId)
     {
-        $response = $this->_get("fundingsources?fundingid={$fundingSourceId}");
-
-        $fundingSource = $this->_parse($response);
-
-        return $fundingSource;
+        $response = $this->get("fundingsources?fundingid={$fundingSourceId}");
+        return $this->parse($response);
     }
 
-
-    // *********************
-    // Balance Methods
-    // *********************
+    /**
+     * Retrieve the account balance for the user with the given authorized 
+     * access token. 
+     * 
+     * @return float Balance in USD 
+     */
     public function balance()
     {
-        $response = $this->_get('balance');
-
-        $balance = $this->_parse($response);
-
-        return $balance;
+        $response = $this->get('balance');
+        return $this->parse($response);
     }
 
-    // *********************
-    // Transactions Methods
-    // *********************
-    
     /**
-     * Send money from the authenticated account
-     * to another online account
-     *
-     * @param {string} The sending account's PIN
-     * @param {string} The destination account ID; Can be Dwolla ID, email, phone, Twitter ID, or Facebook ID
-     * @param {string} Amount to be sent
-     * @param {string} The destination ID type; Can be 'Dwolla', 'Email', 'Phone', 'Twitter', or 'Facebook'
-     * @param {string} Notes to be associated with this transaction
-     * @param {int} Facilitator fee amount to be added
-     * @param {boolean} Does the sending user assume any and all transaction costs?
-     * @return {int} The transaction ID, or {boolean:FALSE} when an error occurs
+     * Send funds to a destination user from the user associated with the 
+     * authorized access token.
+     * 
+     * @param int $pin
+     * @param string $destinationId Dwolla identifier, Facebook identifier, Twitter identifier, phone number, or email address
+     * @param float $amount
+     * @param string $destinationType Type of destination user. Can be Dwolla, Facebook, Twitter, Email, or Phone. Defaults to Dwolla.
+     * @param string $notes Note to attach to the transaction. Limited to 250 characters.
+     * @param float $facilitatorAmount
+     * @param bool $assumeCosts Will sending user assume the Dwolla fee?
+     * @return string Transaction Id 
      */
-    public function send(   $pin = FALSE,
-                            $destinationId = FALSE,
-                            $amount = FALSE,
-                            $destinationType = 'Dwolla',
-                            $notes = '',
-                            $facilitatorAmount = 0,
-                            $assumeCosts = TRUE
-                        )
+    public function send($pin = false, $destinationId = false, $amount = false, $destinationType = 'Dwolla', $notes = '', $facilitatorAmount = 0, $assumeCosts = false
+    )
     {
         // Verify required paramteres
-        if(!$pin) { return $this->_setError('Please enter a PIN.'); }
-        else if(!$destinationId) { return $this->_setError('Please enter a destination ID.'); }
-        else if(!$amount) { return $this->_setError('Please enter a transaction amount.'); }
+        if (!$pin) {
+            return $this->setError('Please enter a PIN.');
+        } else if (!$destinationId) {
+            return $this->setError('Please enter a destination ID.');
+        } else if (!$amount) {
+            return $this->setError('Please enter a transaction amount.');
+        }
 
         // Build request, and send it to Dwolla
         $params = array(
-            'pin'               => $pin,
-            'destinationId'     => $destinationId,
-            'destinationType'   => $destinationType,
-            'amount'            => $amount,
+            'pin' => $pin,
+            'destinationId' => $destinationId,
+            'destinationType' => $destinationType,
+            'amount' => $amount,
             'facilitatorAmount' => $facilitatorAmount,
-            'assumeCosts'       => $assumeCosts,
-            'notes'             => $notes
+            'assumeCosts' => $assumeCosts,
+            'notes' => $notes
         );
-        $response = $this->_post('transactions/send', $params);
+        $response = $this->post('transactions/send', $params);
 
         // Parse Dwolla's response
-        $transactionId = $this->_parse($response);
+        $transactionId = $this->parse($response);
 
         return $transactionId;
     }
 
     /**
-     * Send a 'Request money' from the authenticated
-     * account to another online account
-     *
-     * @param {string} The requesting account's PIN
-     * @param {string} The destination account ID; Can be Dwolla ID, email, phone, Twitter ID, or Facebook ID
-     * @param {string} Amount to be sent
-     * @param {string} The destination ID type; Can be 'Dwolla', 'Email', 'Phone', 'Twitter', or 'Facebook'
-     * @param {string} Notes to be associated with this transaction
-     * @param {int} Facilitator fee amount to be added
-     * @return {int} The request transaction ID, or {boolean:FALSE} when an error occurs
+     * Request funds from a source user, originating from the user associated 
+     * with the authorized access token.
+     * 
+     * @param int $pin
+     * @param string $sourceId
+     * @param float $amount
+     * @param string $sourceType
+     * @param string $notes
+     * @param float $facilitatorAmount
+     * @return int Request Id 
      */
-    public function request($pin = FALSE,
-                            $sourceId = FALSE,
-                            $amount = FALSE,
-                            $sourceType = 'Dwolla',
-                            $notes = '',
-                            $facilitatorAmount = 0)
+    public function request($pin = false, $sourceId = false, $amount = false, $sourceType = 'Dwolla', $notes = '', $facilitatorAmount = 0)
     {
         // Verify required paramteres
-        if(!$pin) { return $this->_setError('Please enter a PIN.'); }
-        else if(!$sourceId) { return $this->_setError('Please enter a source ID.'); }
-        else if(!$amount) { return $this->_setError('Please enter a transaction amount.'); }
+        if (!$pin) {
+            return $this->setError('Please enter a PIN.');
+        } else if (!$sourceId) {
+            return $this->setError('Please enter a source ID.');
+        } else if (!$amount) {
+            return $this->setError('Please enter a transaction amount.');
+        }
 
         // Build request, and send it to Dwolla
         $params = array(
-            'pin'               => $pin,
-            'sourceId'          => $sourceId,
-            'sourceType'        => $sourceType,
-            'amount'            => $amount,
+            'pin' => $pin,
+            'sourceId' => $sourceId,
+            'sourceType' => $sourceType,
+            'amount' => $amount,
             'facilitatorAmount' => $facilitatorAmount,
-            'notes'             => $notes
+            'notes' => $notes
         );
-        $response = $this->_post('transactions/request', $params);
+        $response = $this->post('transactions/request', $params);
 
         // Parse Dwolla's response
-        $transactionId = $this->_parse($response);
+        $transactionId = $this->parse($response);
 
         return $transactionId;
     }
 
     /**
-     * Grab information for the given
-     * transaction ID
+     * Grab information for the given transaction ID
      *
-     * @param {int} Transaction ID to which information is pulled
-     * @return {array} Transaction information
+     * @param int Transaction ID to which information is pulled
+     * @return array Transaction information
      */
     public function transaction($transactionId)
     {
         // Verify required paramteres
-        if(!$transactionId) { return $this->_setError('Please enter a transaction ID.'); }
+        if (!$transactionId) {
+            return $this->setError('Please enter a transaction ID.');
+        }
 
         // Build request, and send it to Dwolla
-        $response = $this->_get("transactions/{$transactionId}");
+        $response = $this->get("transactions/{$transactionId}");
 
         // Parse Dwolla's response
-        $transaction = $this->_parse($response);
+        $transaction = $this->parse($response);
 
         return $transaction;
     }
 
     /**
-     * Grabs a list of all transactions associated
-     * with the authenticated account
-     *
-     * @param {string} 
-     * @param {array} 
-     * @param {int} 
-     * @param {boolean} 
-     * @return {array} List of transactions
+     * Retrieve a list of transactions for the user associated with the 
+     * authorized access token.
+     * 
+     * @param string $sinceDate Earliest date and time for which to retrieve transactions. Defaults to 7 days prior to current date and time in UTC.
+     * @param array $types Types of transactions to retrieve.  Options are money_sent, money_received, deposit, withdrawal, and fee.
+     * @param int $limit Number of transactions to retrieve between 1 and 200
+     * @param int $skip Number of transactions to skip
+     * @return array Transaction search results 
      */
-    public function listings(   $sinceDate = FALSE,
-                                $types = array('money_sent', 'money_received', 'deposit', 'withdrawal', 'fee'),
-                                $limit = 10,
-                                $skip = FALSE)
+    public function listings($sinceDate = false, $types = array('money_sent', 'money_received', 'deposit', 'withdrawal', 'fee'), $limit = 10, $skip = 0)
     {
         $params = array(
-            'sinceDate' => $sinceData,
-            'types'     => implode('|', $types),
-            'limit'     => $limit,
-            'skip'      => $skit
+            'sinceDate' => $sinceDate,
+            'types' => implode('|', $types),
+            'limit' => $limit,
+            'skip' => $skip
         );
 
         // Build request, and send it to Dwolla
-        $response = $this->_get("transactions", $params);
+        $response = $this->get("transactions", $params);
 
         // Parse Dwolla's response
-        $listings = $this->_parse($response);
+        $listings = $this->parse($response);
 
         return $listings;
     }
 
-    public function stats(  $types = array('TransactionsCount', 'TransactionsTotal'),
-                            $sinceDate = FALSE,
-                            $endDate = FALSE)
+    /**
+     * Retrieve transactions stats for the user associated with the authorized 
+     * access token.
+     * 
+     * @param array $types Options are 'TransactionsCount' and 'TransactionsTotal'
+     * @param string $startDate Starting date and time to for which to process transactions stats. Defaults to 0300 of the current day in UTC.
+     * @param string $endDate Ending date and time to for which to process transactions stats. Defaults to current date and time in UTC.
+     * @return array Transaction stats search results 
+     */
+    public function stats($types = array('TransactionsCount', 'TransactionsTotal'), $startDate = null, $endDate = null)
     {
         $params = array(
-            'sinceDate' => $sinceData,
-            'types'     => implode(',', $types),
-            'limit'     => $limit,
-            'skip'      => $skit
+            'types' => implode(',', $types),
+            'startDate' => $startDate,
+            'endDate' => $endDate
         );
 
         // Build request, and send it to Dwolla
-        $response = $this->_get("transactions/stats", $params);
+        $response = $this->get("transactions/stats", $params);
 
         // Parse Dwolla's response
-        $stats = $this->_parse($response);
+        $stats = $this->parse($response);
 
         return $stats;
     }
 
-    // *********************
-    // Offsite Gateway Method
-    // *********************
     /**
-     * Clears out any products previously
-     * placed in the offsite gateway session
-     * effectively starting a new session
-     *
-     * @return {boolean} Whether or not the session was cleared
+     * Creates an empty Off-Site Gateway Order Items array 
      */
     public function startGatewaySession()
     {
-	    $this->gatewaySession = array();
-
-	    return TRUE;
+        $this->gatewaySession = array();
     }
 
     /**
-     * Add a product to the current offsite
-     * gateway session
-     *
-     * @param {string} Product name; (required)
-     * @param {float} Product price; (required)
-     * @param {string} Product description; (optional)
-     * @param {int} Quantity of product; (optional, defaults to 1)
-     *
-     * @return {boolean} Whether or not the product was added succesfully
+     * Adds new order item to gateway session
+     * 
+     * @param string $name
+     * @param float $price Item price in USD
+     * @param int $quantity Number of items
+     * @param string $description Item description
      */
-	public function addGatewayProduct($name = FALSE, $amount = FALSE, $description = FALSE, $quantity = 1)
-	{
-        // Verify required paramteres
-        if(!$name) { return $this->_setError('Please enter a product name.'); }
-        else if(!$amount) { return $this->_setError('Please enter an amount.'); }
-
+    public function addGatewayProduct($name, $price, $quantity = 1, $description = '')
+    {
         $product = array(
-        	'Name'			=> $name,
-        	'Description'	=> $description,
-        	'Price'			=> $amount,
-        	'Quantity'		=> $quantity
+            'Name' => $name,
+            'Description' => $description,
+            'Price' => $price,
+            'Quantity' => $quantity
         );
 
         $this->gatewaySession[] = $product;
-
-        return TRUE;
-	}
+    }
 
     /**
-     * Create an offsite gateway checkout
-     * session
-     *
-     * @param {string} The destination account ID; Can only be a Dwolla ID; (required)
-     * @param {string} Any order ID; (optional)
-     * @param {float} Discount amount; (optional)
-     * @param {float} Shipping amount; (optional)
-     * @param {float} Tax amount; (optional)
-     * @param {string} Notes/memos to be associated with transaction; (optional)
-     * @param {string} A URL to POST the transaction result to; (optional)
-     *
-     * @return {string} The URL for the checkout session
+     * Creates and executes Server-to-Server checkout request
+     * @link http://developers.dwolla.com/dev/docs/gateway#server-to-server
+     * 
+     * @param string $destinationId
+     * @param string $orderId
+     * @param float $discount
+     * @param float $shipping
+     * @param float $tax
+     * @param string $notes
+     * @param string $callback
+     * @return string Checkout URL 
      */
-     public function getGatewayURL($destinationId, $orderId = FALSE, $discount = FALSE, $shipping = FALSE, $tax = FALSE, $notes = FALSE, $callback = FALSE)
-     {
-        // Verify required paramteres
-        if(!$destinationId) { return $this->_setError('Please enter a Dwolla destination ID.'); }
+    public function getGatewayURL($destinationId, $orderId = null, $discount = 0, $shipping = 0, $tax = 0, $notes = '', $callback = null)
+    {
+        // TODO add validation? Throw exception if malformed?
+        $destinationId = $this->parseDwollaID($destinationId);
 
-     	// Normalize optinoal parameters
-     	$destinationId = $this->parseDwollaID($destinationId);
-     	if(!$shipping) { $shipping = 0; } else { $shipping = floatval($shipping); }
-     	if(!$tax) { $tax = 0; } else { $tax = floatval($tax); }
-     	if(!$discount) { $discount = 0; } else { $discount = abs(floatval($discount)); }
-     	if(!$notes) { $notes = ''; }
+        // Normalize optional parameters
+        if (!$shipping) {
+            $shipping = 0;
+        } else {
+            $shipping = floatval($shipping);
+        }
+        if (!$tax) {
+            $tax = 0;
+        } else {
+            $tax = floatval($tax);
+        }
+        if (!$discount) {
+            $discount = 0;
+        } else {
+            $discount = abs(floatval($discount));
+        }
+        if (!$notes) {
+            $notes = '';
+        }
 
-     	// Calcualte subtotal
-     	$subtotal = 0;
-     	foreach($this->gatewaySession as $product) {
-		    $subtotal += floatval($product['Price']) * floatval($product['Quantity']);
-     	}
+        // Calcualte subtotal
+        $subtotal = 0;
 
-     	// Calculate grand total
-     	$total = $subtotal - $discount + $shipping + $tax;
+        foreach ($this->gatewaySession as $product) {
+            $subtotal += floatval($product['Price']) * floatval($product['Quantity']);
+        }
 
-     	// Create request body
-		$request = array(
-			'Key'       => $this->apiKey,
-			'Secret'    => $this->apiSecret,
-			'Test'      => ($this->mode == 'TEST') ? 'true' : 'false',
-			'PurchaseOrder' => array(
-				'DestinationId' => $destinationId,
-				'OrderItems'    => $this->gatewaySession,
-				'Discount'      => -$discount,
-				'Shipping'      => $shipping,
-				'Tax'           => $tax,
-				'Total'			=> $total,
-				'Notes'         => $notes
-			)
-		);
+        // Calculate grand total
+        $total = $subtotal - $discount + $shipping + $tax;
 
-		// Append optional parameters
-		if($this->redirectUri) { $request['Redirect'] = $this->redirectUri; }
-		if($callback) { $request['Callback'] = $callback; }
-		if($orderId) { $request['OrderId'] = $orderId; }
+        // Create request body
+        $request = array(
+            'Key' => $this->apiKey,
+            'Secret' => $this->apiSecret,
+            'Test' => ($this->mode == 'test') ? 'true' : 'false',
+            'PurchaseOrder' => array(
+                'DestinationId' => $destinationId,
+                'OrderItems' => $this->gatewaySession,
+                'Discount' => -$discount,
+                'Shipping' => $shipping,
+                'Tax' => $tax,
+                'Total' => $total,
+                'Notes' => $notes
+            )
+        );
 
-		// Send off the request
-		$response = $this->_curl('https://www.dwolla.com/payment/request', 'POST', $request);
-		if($response['Result'] != 'Success') {
-			$this->errorMessage = $response['Message'];
-			return FALSE;
-		}
+        // Append optional parameters
+        if ($this->redirectUri) {
+            $request['Redirect'] = $this->redirectUri;
+        }
 
-		return 'https://www.dwolla.com/payment/checkout/' . $response['CheckoutId'];
-	}
+        if ($callback) {
+            $request['Callback'] = $callback;
+        }
+
+        if ($orderId) {
+            $request['OrderId'] = $orderId;
+        }
+
+        // Send off the request
+        $response = $this->curl('https://www.dwolla.com/payment/request', 'POST', $request);
+
+        if ($response['Result'] != 'Success') {
+            $this->errorMessage = $response['Message'];
+            return false;
+        }
+
+        return 'https://www.dwolla.com/payment/checkout/' . $response['CheckoutId'];
+    }
 
     /**
      * Verify a signature that came back
@@ -564,146 +615,183 @@ class DwollaRestClient {
      *
      * @return {boolean} Whether or not the signature is valid
      */
-	public function verifyGatewaySignature($signature = FALSE, $checkoutId = FALSE, $amount = FALSE)
-	{
-        // Verify required paramteres
-        if(!$signature) { return $this->_setError('Please pass a proposed signature.'); }
-        if(!$checkoutId) { return $this->_setError('Please pass a checkout ID.'); }
-        if(!$amount) { return $this->_setError('Please pass a total transaction amount.'); }
 
-		// Normalize parameters
-		$amount = floatval($amount);
-		
-		// Calculate an HMAC-SHA1 hexadecimal hash
-		// of the checkoutId and amount ampersand separated
-		// using the consumer secret of the application
-		// as the hash key.
-		//
-		// @doc: http://developers.dwolla.com/dev/docs/gateway
+    /**
+     * Verifiy the signature returned from Offsite-Gateway Redirect
+     * 
+     * @param string $signature
+     * @param string $checkoutId
+     * @param float $amount
+     * @return bool Is signature valid? 
+     */
+    public function verifyGatewaySignature($signature = false, $checkoutId = false, $amount = false)
+    {
+        // Verify required paramteres
+        if (!$signature) {
+            return $this->setError('Please pass a proposed signature.');
+        }
+        if (!$checkoutId) {
+            return $this->setError('Please pass a checkout ID.');
+        }
+        if (!$amount) {
+            return $this->setError('Please pass a total transaction amount.');
+        }
+
+        // Normalize parameters
+        $amount = floatval($amount);
+
+        // Calculate an HMAC-SHA1 hexadecimal hash
+        // of the checkoutId and amount ampersand separated
+        // using the consumer secret of the application
+        // as the hash key.
+        //
+        // @doc: http://developers.dwolla.com/dev/docs/gateway
         $hash = hash_hmac("sha1", "{$checkoutId}&{$amount}", $this->apiSecret);
 
         return $hash == $signature;
-	}
+    }
 
-
-    // ***************
-    // Public methods
-    // ***************
+    /**
+     * @return string|bool Error message or false if error message does not exist
+     */
     public function getError()
     {
-        if(!$this->errorMessage) { return FALSE; }
+        if (!$this->errorMessage) {
+            return false;
+        }
 
         $error = $this->errorMessage;
-        $this->errorMessage = FALSE;
+        $this->errorMessage = false;
 
         return $error;
     }
-    
+
+    /**
+     * Returns properly formatted Dwolla Id
+     * 
+     * @param string|int $id
+     * @return string Properly formatted Dwolla Id 
+     */
     public function parseDwollaID($id)
     {
-	    $id = preg_replace("/[^0-9]/", "", $id);
-	    $id = preg_replace("/([0-9]{3})([0-9]{3})([0-9]{4})/", "$1-$2-$3", $id);
+        $id = preg_replace("/[^0-9]/", "", $id);
+        $id = preg_replace("/([0-9]{3})([0-9]{3})([0-9]{4})/", "$1-$2-$3", $id);
 
-	    return $id;
-    }
-    
-    public function setMode($mode = 'LIVE')
-    {
-    	if($mode != 'LIVE' && $mode != 'TEST') {
-	    	return FALSE;
-    	}
-
-	    $this->mode = $mode;
-
-	    return TRUE;
+        return $id;
     }
 
-    // ********************
-    // Private methods
-    // ********************
-    protected function _setError($message)
+    /**
+     * @param string $message Error message
+     */
+    protected function setError($message)
     {
         $this->errorMessage = $message;
-        return FALSE;
     }
 
-    protected function _parse($response)
+    /**
+     * Parse API response
+     * 
+     * @param array $response
+     * @return array
+     */
+    protected function parse($response)
     {
-        if(!$response['Success'])
-        {
+        if (!$response['Success']) {
             $this->errorMessage = $response['Message'];
 
             // Exception for /register method
-            if($response['Response']) {
-	            $this->errorMessage .= " :: " . json_encode($response['Response']);
+            if ($response['Response']) {
+                $this->errorMessage .= " :: " . json_encode($response['Response']);
             }
 
-            return FALSE;
+            return false;
         }
 
         return $response['Response'];
     }
 
-    protected function _post($request, $params = FALSE, $include_token = TRUE)
+    /**
+     * Executes POST request against API
+     * 
+     * @param string $request
+     * @param array $params
+     * @param bool $includeToken Include oauth token in request?
+     * @return array|null 
+     */
+    protected function post($request, $params = false, $includeToken = true)
     {
-        $url = $this->apiServerUrl . $request . ($include_token ? "?oauth_token=" . urlencode($this->oauthToken) : "");
+        $url = $this->apiServerUrl . $request . ($includeToken ? "?oauth_token=" . urlencode($this->oauthToken) : "");
 
-        $rawData = $this->_curl($url, 'POST', $params);
+        $rawData = $this->curl($url, 'POST', $params);
 
         return $rawData;
     }
 
-    protected function _get($request, $params = array())
+    /**
+     * Executes GET requests against API
+     * 
+     * @param string $request
+     * @param array $params
+     * @return array|null Array of results or null if json_decode fails in curl()
+     */
+    protected function get($request, $params = array())
     {
         $params['oauth_token'] = $this->oauthToken;
-        
-        $delimiter = (strpos($request, '?') === FALSE) ? '?' : '&';
+
+        $delimiter = (strpos($request, '?') === false) ? '?' : '&';
         $url = $this->apiServerUrl . $request . $delimiter . http_build_query($params);
 
-        $rawData = $this->_curl($url, 'GET');
+        $rawData = $this->curl($url, 'GET');
 
         return $rawData;
     }
 
-    protected function _curl($url, $method = 'GET', $params = array())
+    /**
+     * Execute curl request
+     * 
+     * @param string $url URL to send requests
+     * @param string $method HTTP method
+     * @param array $params request params
+     * @return array|null Returns array of results or null if json_decode fails
+     */
+    protected function curl($url, $method = 'GET', $params = array())
     {
-    	// Encode POST data
-    	$data = json_encode($params);
+        // Encode POST data
+        $data = json_encode($params);
 
-    	// Set request headers
-    	$headers = array('Accept: application/json', 'Content-Type: application/json;charset=UTF-8');
-    	if($method == 'POST') {
-	    	$headers[] = 'Content-Length: ' . strlen($data);
-    	}
+        // Set request headers
+        $headers = array('Accept: application/json', 'Content-Type: application/json;charset=UTF-8');
+        if ($method == 'POST') {
+            $headers[] = 'Content-Length: ' . strlen($data);
+        }
 
-    	// Set up our CURL request
+        // Set up our CURL request
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
         curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
-        curl_setopt($ch, CURLOPT_HEADER, FALSE);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_HEADER, false);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
         // Windows require this certificate
         $ca = dirname(__FILE__);
         curl_setopt($ch, CURLOPT_CAINFO, $ca); // Set the location of the CA-bundle
         curl_setopt($ch, CURLOPT_CAINFO, $ca . '/cacert.pem'); // Set the location of the CA-bundle
-
         // Initiate request
         $rawData = curl_exec($ch);
 
         // If HTTP response wasn't 200,
         // log it as an error!
-		$code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-		if($code !== 200) {
-        	return array(
-        		'Success' => FALSE,
-        		'Message' => "Request failed. Server responded with: {$code}"
-        	);
+        $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if ($code !== 200) {
+            return array(
+                'Success' => false,
+                'Message' => "Request failed. Server responded with: {$code}"
+            );
         }
 
         // All done with CURL
@@ -711,7 +799,49 @@ class DwollaRestClient {
 
         // Otherwise, assume we got some
         // sort of a response
-        return json_decode($rawData, TRUE);;
+        return json_decode($rawData, true);
     }
+
+    /**
+     * @param string $token oauth token
+     */
+    public function setToken($token)
+    {
+        $this->oauthToken = $token;
+    }
+
+    /**
+     * @return string oauth token
+     */
+    public function getToken()
+    {
+        return $this->oauthToken;
+    }
+
+    /**
+     * Sets client mode.  Appropriate values are 'live' and 'test'
+     * 
+     * @param string $mode
+     * @throws InvalidArgumentException
+     * @return void
+     */
+    public function setMode($mode = 'live')
+    {
+        $mode = strtolower($mode);
+        
+        if ($mode != 'live' && $mode != 'test') {
+            throw new InvalidArgumentException('Appropriate mode values are live or test');
+        }
+
+        $this->mode = $mode;
+    }
+
+    /**
+     * @return string Client mode
+     */
+    public function getMode()
+    {
+        return $this->mode;
+    }
+
 }
-?>
