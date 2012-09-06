@@ -3,7 +3,7 @@
 
 ## Version 
 
-1.1.0
+1.2.0
 
 ## Requirements
 - [PHP](http://www.php.net/)
@@ -98,6 +98,12 @@ Helper Methods:
     setMode($mode)      ==> (bool) did mode change?
 
 ## Changelog
+
+1.2.0 (Thanks to Jeremy Kendall!)
+
+* Major code refactor, reformat to PSR
+* Changed license to MIT License
+* Added register user example
 
 1.1.0 (Thanks to Jeremy Kendall!)
 

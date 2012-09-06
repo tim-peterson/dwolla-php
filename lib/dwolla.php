@@ -243,7 +243,7 @@ class DwollaRestClient
             'ein' => $ein,
             'acceptTerms' => $acceptTerms
         );
-        $response = $this->post('register', $params, false); // false = don't include oAuth token
+        $response = $this->post('register/', $params, false); // false = don't include oAuth token
 
         $user = $this->parse($response);
 
