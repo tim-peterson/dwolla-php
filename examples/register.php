@@ -6,7 +6,7 @@ require '../lib/dwolla.php';
 require '_keys.php';
 
 // Instantiate a new Dwolla REST Client
-$Dwolla = new DwollaRestClient($apiKey, $apiSecret, 'http://www.1on1development.com/dwolla/dwolla');
+$Dwolla = new DwollaRestClient($apiKey, $apiSecret, 'http://developers.dwolla.com/some_redirect_uri');
 
 /**
  * EXAMPLE 1: 
