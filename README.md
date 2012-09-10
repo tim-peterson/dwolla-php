@@ -3,7 +3,7 @@
 
 ## Version 
 
-1.2.1
+1.2.2
 
 ## Requirements
 - [PHP](http://www.php.net/)
@@ -18,7 +18,7 @@ run the `php composer.phar install` command to install it:
 
     {
         "require": {
-            "dwolla/dwolla-php": "1.2.1"
+            "dwolla/dwolla-php": "1.2.2"
         }
     }
 
@@ -99,7 +99,7 @@ Helper Methods:
 
 ## Changelog
 
-1.2.0 (Thanks to Chris Hiestand)
+1.2.2 (Thanks to Chris Hiestand)
 
 * Added the fundsSource parameter to the Send() method
 
