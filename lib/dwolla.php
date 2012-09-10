@@ -343,7 +343,7 @@ class DwollaRestClient
      * @param bool $assumeCosts Will sending user assume the Dwolla fee?
      * @return string Transaction Id 
      */
-    public function send($pin = false, $destinationId = false, $amount = false, $destinationType = 'Dwolla', $notes = '', $facilitatorAmount = 0, $assumeCosts = false
+    public function send($pin = false, $destinationId = false, $amount = false, $destinationType = 'Dwolla', $notes = '', $facilitatorAmount = 0, $assumeCosts = false, $fundsSource = false
     )
     {
         // Verify required paramteres
@@ -363,7 +363,8 @@ class DwollaRestClient
             'amount' => $amount,
             'facilitatorAmount' => $facilitatorAmount,
             'assumeCosts' => $assumeCosts,
-            'notes' => $notes
+            'notes' => $notes,
+            'fundsSource' => $fundsSource,
         );
         $response = $this->post('transactions/send', $params);
 
