@@ -341,9 +341,10 @@ class DwollaRestClient
      * @param string $notes Note to attach to the transaction. Limited to 250 characters.
      * @param float $facilitatorAmount
      * @param bool $assumeCosts Will sending user assume the Dwolla fee?
+     * @param string $fundsSource Funding source ID to use. Defaults to Dwolla balance.
      * @return string Transaction Id 
      */
-    public function send($pin = false, $destinationId = false, $amount = false, $destinationType = 'Dwolla', $notes = '', $facilitatorAmount = 0, $assumeCosts = false, $fundsSource = false
+    public function send($pin = false, $destinationId = false, $amount = false, $destinationType = 'Dwolla', $notes = '', $facilitatorAmount = 0, $assumeCosts = false, $fundsSource = 'balance'
     )
     {
         // Verify required paramteres
