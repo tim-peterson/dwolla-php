@@ -3,7 +3,7 @@
 
 ## Version 
 
-1.2.0
+1.2.1
 
 ## Requirements
 - [PHP](http://www.php.net/)
@@ -18,7 +18,7 @@ run the `php composer.phar install` command to install it:
 
     {
         "require": {
-            "dwolla/dwolla-php": "1.1.0"
+            "dwolla/dwolla-php": "1.2.1"
         }
     }
 
@@ -99,13 +99,17 @@ Helper Methods:
 
 ## Changelog
 
-1.2.0 (Thanks to Jeremy Kendall!)
+1.2.0 (Thanks to Chris Hiestand)
+
+* Added the fundsSource parameter to the Send() method
+
+1.2.0 (Thanks to Jeremy Kendall)
 
 * Major code refactor, reformat to PSR
 * Changed license to MIT License
 * Added register user example
 
-1.1.0 (Thanks to Jeremy Kendall!)
+1.1.0 (Thanks to Jeremy Kendall)
 
 * Added tests
 * Added support for composer
