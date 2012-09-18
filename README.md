@@ -3,7 +3,7 @@
 
 ## Version 
 
-1.2.2
+1.2.3
 
 ## Requirements
 - [PHP](http://www.php.net/)
@@ -98,6 +98,10 @@ Helper Methods:
     setMode($mode)      ==> (bool) did mode change?
 
 ## Changelog
+
+1.2.3
+
+* Add support for offsite gateway's guest checkout mode
 
 1.2.2 (Thanks to Chris Hiestand)
 
