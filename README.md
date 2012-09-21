@@ -3,7 +3,7 @@
 
 ## Version 
 
-1.2.3
+1.2.4
 
 ## Requirements
 - [PHP](http://www.php.net/)
@@ -18,7 +18,7 @@ run the `php composer.phar install` command to install it:
 
     {
         "require": {
-            "dwolla/dwolla-php": "1.2.2"
+            "dwolla/dwolla-php": "1.2.4"
         }
     }
 
@@ -98,6 +98,10 @@ Helper Methods:
     setMode($mode)      ==> (bool) did mode change?
 
 ## Changelog
+
+1.2.4
+
+* Round the offsite gateway total amount
 
 1.2.3
 
