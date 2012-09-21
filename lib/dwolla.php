@@ -566,7 +566,7 @@ class DwollaRestClient
         }
 
         // Calculate grand total
-        $total = $subtotal - $discount + $shipping + $tax;
+        $total = round($subtotal - $discount + $shipping + $tax, 2);
 
         // Create request body
         $request = array(

@@ -52,10 +52,10 @@ $Dwolla->setMode('TEST');
 $Dwolla->startGatewaySession();
 
 // Add first product; Price = $10, Qty = 1
-$Dwolla->addGatewayProduct('Test 1', 10, 'Test product');
+$Dwolla->addGatewayProduct('Test 1', 10, 1, 'Test product');
 
-// Add first product; Price = $6, Qty = 2
-$Dwolla->addGatewayProduct('Test 2', 6, 'Another Test product', 2);
+// Add second product; Price = $6, Qty = 2
+$Dwolla->addGatewayProduct('Test 2', 6, 2, 'Another Test product');
 
 // Creates a checkout session, and return the URL
 // Destination ID: 812-626-8794
