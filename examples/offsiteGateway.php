@@ -26,8 +26,8 @@ $Dwolla->startGatewaySession();
 $Dwolla->addGatewayProduct('Test 1', 10);
 
 // Creates a checkout session, and return the URL
-// Destination ID: 812-626-8794
-$url = $Dwolla->getGatewayURL('812-626-8794');
+// Destination ID: 812-713-9234
+$url = $Dwolla->getGatewayURL('812-713-9234');
 if(!$url) { echo $Dwolla->getError(); } // Display any errors returned from Dwolla
 else { echo "<p>Example 1 URL: <a href='{$url}'>{$url}</a></p>"; } // Forward the user to the offsite gateway
 ?>
@@ -58,14 +58,14 @@ $Dwolla->addGatewayProduct('Test 1', 10, 1, 'Test product');
 $Dwolla->addGatewayProduct('Test 2', 6, 2, 'Another Test product');
 
 // Creates a checkout session, and return the URL
-// Destination ID: 812-626-8794
+// Destination ID: 812-713-9234
 // Order ID: 10001
 // Discount: $5
 // Shipping: $0.99
 // Tax: $1.87
 // Memo: 'This is a great purchase'
 // Callback: 'http://requestb.in/1fy628r1' (you'll need to create your own bin at http://requestb.in/)
-$url = $Dwolla->getGatewayURL('812-626-8794', '10001', 24.85, 0.99, 1.87, 'This is a great purchase', 'http://requestb.in/1fy628r1');
+$url = $Dwolla->getGatewayURL('812-713-9234', '10001', 24.85, 0.99, 1.87, 'This is a great purchase', 'http://requestb.in/1fy628r1');
 if(!$url) { echo $Dwolla->getError(); } // Display any errors returned from Dwolla
 else { echo "<p>Example 2 URL: <a href='{$url}'>{$url}</a></p>"; } // Forward the user to the offsite gateway
 ?>

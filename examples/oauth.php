@@ -18,6 +18,8 @@ $Dwolla = new DwollaRestClient($apiKey, $apiSecret, $redirectUri, $permissions);
  *   Create an authentication URL
  *   that the user will be redirected to
  **/
+
+
 if(!isset($_GET['code']) && !isset($_GET['error'])) {
 	$authUrl = $Dwolla->getAuthUrl();
 	header("Location: {$authUrl}");
@@ -32,10 +34,15 @@ if(!isset($_GET['code']) && !isset($_GET['error'])) {
 if(isset($_GET['error'])) {
 	echo "There was an error. Dwolla said: {$_GET['error_description']}";
 }
+
 else if(isset($_GET['code'])) {
 	$code = $_GET['code'];
-	$token = $Dwolla->requestToken($code);
 
-	if(!$token) { echo $Dwolla->getError(); } // Check for errors
-	else { echo "Your access token is: {$token}"; } // Print the access token
+	$token = $Dwolla->requestToken($code);
+	if(!$token) { $Dwolla->getError(); } // Check for errors
+	else {
+		session_start();
+		$_SESSION['token'] = $token;
+		echo "Your access token is: {$token}";
+	} // Print the access token
 }

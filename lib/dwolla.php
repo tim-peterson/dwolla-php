@@ -28,7 +28,7 @@
  * @author    Michael Schonfeld <michael@dwolla.com>
  * @copyright Copyright (c) 2012 Dwolla Inc. (http://www.dwolla.com)
  * @license   http://opensource.org/licenses/MIT MIT
- * @version   1.2.4
+ * @version   1.2.5
  * @link      http://www.dwolla.com
  */
 
@@ -441,20 +441,21 @@ class DwollaRestClient
      * Retrieve a list of transactions for the user associated with the 
      * authorized access token.
      * 
-     * @param string $sinceDate Earliest date and time for which to retrieve transactions. Defaults to 7 days prior to current date and time in UTC.
+     * @param string $sinceDate Earliest date and time for which to retrieve transactions. Defaults to 7 days prior to current date and time in UTC. Format: DD-MM-YYYY
      * @param array $types Types of transactions to retrieve.  Options are money_sent, money_received, deposit, withdrawal, and fee.
      * @param int $limit Number of transactions to retrieve between 1 and 200
      * @param int $skip Number of transactions to skip
      * @return array Transaction search results 
      */
-    public function listings($sinceDate = false, $types = array('money_sent', 'money_received', 'deposit', 'withdrawal', 'fee'), $limit = 10, $skip = 0)
+    public function listings($sinceDate = false, $types = false, $limit = 10, $skip = 0)
     {
         $params = array(
-            'sinceDate' => $sinceDate,
-            'types' => implode('|', $types),
             'limit' => $limit,
             'skip' => $skip
         );
+
+        if($sinceDate) { $params['sinceDate'] = $sinceDate; }
+        if($types) { $params['types'] = implode('|', $types); }
 
         // Build request, and send it to Dwolla
         $response = $this->get("transactions", $params);
@@ -652,7 +653,11 @@ class DwollaRestClient
         // @doc: http://developers.dwolla.com/dev/docs/gateway
         $hash = hash_hmac("sha1", "{$checkoutId}&{$amount}", $this->apiSecret);
 
-        return $hash == $signature;
+        if($hash !== $signature) {
+          return $this->setError('Dwolla signature verification failed.');
+        }
+
+        return TRUE;
     }
 
     /**
