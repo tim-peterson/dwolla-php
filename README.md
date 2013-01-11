@@ -3,7 +3,7 @@
 
 ## Version 
 
-1.3.1
+1.3.2
 
 ## Requirements
 - [PHP](http://www.php.net/)
@@ -18,7 +18,7 @@ run the `php composer.phar install` command to install it:
 
     {
         "require": {
-            "dwolla/dwolla-php": "1.3.1"
+            "dwolla/dwolla-php": "1.3.2"
         }
     }
 
@@ -113,6 +113,10 @@ Helper Methods:
     setDebug($mode)     ==> (bool) set debog [verbose] mode
 
 ## Changelog
+
+1.3.2
+
+* Modify transaction/byId to use app creds rather than oauth token (thanks to @chrishiestand)
 
 1.3.1
 

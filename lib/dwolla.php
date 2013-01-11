@@ -28,7 +28,7 @@
  * @author    Michael Schonfeld <michael@dwolla.com>
  * @copyright Copyright (c) 2012 Dwolla Inc. (http://www.dwolla.com)
  * @license   http://opensource.org/licenses/MIT MIT
- * @version   1.3.1
+ * @version   1.3.2
  * @link      http://www.dwolla.com
  */
 
@@ -640,7 +640,8 @@ class DwollaRestClient
     }
 
     /**
-     * Grab information for the given transaction ID with app credentials instead of oauth
+     * Grab information for the given transaction ID with 
+     * app credentials (instead of oauth token)
      *
      * @param int Transaction ID to which information is pulled
      * @return array Transaction information
