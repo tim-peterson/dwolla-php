@@ -640,7 +640,7 @@ class DwollaRestClient
     }
 
     /**
-     * Grab information for the given transaction ID
+     * Grab information for the given transaction ID with app credentials instead of oauth
      *
      * @param int Transaction ID to which information is pulled
      * @return array Transaction information
@@ -652,8 +652,13 @@ class DwollaRestClient
             return $this->setError('Please enter a transaction ID.');
         }
 
+        $params = array(
+            'client_id' => $this->apiKey,
+            'client_secret' => $this->apiSecret
+        );
+
         // Build request, and send it to Dwolla
-        $response = $this->get("transactions/{$transactionId}");
+        $response = $this->get("transactions/{$transactionId}", $params);
 
         // Parse Dwolla's response
         $transaction = $this->parse($response);
