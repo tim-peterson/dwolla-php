@@ -28,7 +28,7 @@
  * @author    Michael Schonfeld <michael@dwolla.com>
  * @copyright Copyright (c) 2012 Dwolla Inc. (http://www.dwolla.com)
  * @license   http://opensource.org/licenses/MIT MIT
- * @version   1.3
+ * @version   1.3.1
  * @link      http://www.dwolla.com
  */
 
@@ -304,8 +304,7 @@ class DwollaRestClient
      * 
      * Half of the limit are returned as spots with closest proximity. The other 
      * half of the spots are returned as random spots within the range.
-     * 
-     * @todo implement
+     * This call can return nearby venues on Foursquare but not Dwolla, they will have an Id of "null"
      * 
      * @param float $latitude
      * @param float $longitude
@@ -315,8 +314,19 @@ class DwollaRestClient
      */
     public function nearbyContacts($latitude, $longitude, $range = 10, $limit = 10)
     {
-        // TODO implement
-        return null;
+      $params = array(
+        'latitude' => $latitude,
+        'longitude' => $longitude,
+        'limit' => $limit,
+        'range' => $range,
+        'client_id' => $this->apiKey,
+        'client_secret' => $this->apiSecret,
+      );
+
+      $response = $this->get('contacts/nearby', $params);
+      $contacts = $this->parse($response);
+
+      return $contacts;
     }
 
     /**
@@ -464,7 +474,7 @@ class DwollaRestClient
      */
     public function balance()
     {
-        $response = $this->get('balance');
+        $response = $this->get('balance/');
         return $this->parse($response);
     }
 
@@ -655,7 +665,8 @@ class DwollaRestClient
      * Retrieve a list of transactions for the user associated with the 
      * authorized access token.
      * 
-     * @param string $sinceDate Earliest date and time for which to retrieve transactions. Defaults to 7 days prior to current date and time in UTC. Format: DD-MM-YYYY
+     * @param string $sinceDate Earliest date and time for which to retrieve transactions.
+     *        Defaults to 7 days prior to current date and time in UTC. Format: DD-MM-YYYY
      * @param array $types Types of transactions to retrieve.  Options are money_sent, money_received, deposit, withdrawal, and fee.
      * @param int $limit Number of transactions to retrieve between 1 and 200
      * @param int $skip Number of transactions to skip

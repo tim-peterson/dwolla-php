@@ -3,7 +3,7 @@
 
 ## Version 
 
-1.3
+1.3.1
 
 ## Requirements
 - [PHP](http://www.php.net/)
@@ -18,7 +18,7 @@ run the `php composer.phar install` command to install it:
 
     {
         "require": {
-            "dwolla/dwolla-php": "1.3"
+            "dwolla/dwolla-php": "1.3.1"
         }
     }
 
@@ -113,6 +113,10 @@ Helper Methods:
     setDebug($mode)     ==> (bool) set debog [verbose] mode
 
 ## Changelog
+
+1.3.1
+
+* Implemented nearbyContacts (thanks to @brettneese)
 
 1.3
 
