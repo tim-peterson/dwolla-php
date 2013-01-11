@@ -28,7 +28,7 @@
  * @author    Michael Schonfeld <michael@dwolla.com>
  * @copyright Copyright (c) 2012 Dwolla Inc. (http://www.dwolla.com)
  * @license   http://opensource.org/licenses/MIT MIT
- * @version   1.2.6
+ * @version   1.3
  * @link      http://www.dwolla.com
  */
 
@@ -91,6 +91,11 @@ class DwollaRestClient
      * @var string error messages returned from Dwolla
      */
     private $errorMessage = false;
+    
+    /**
+     * @var string operate in debug mode
+     */
+    private $debugMode = false;
 
     const API_SERVER = "https://www.dwolla.com/oauth/rest/";
 
@@ -104,7 +109,7 @@ class DwollaRestClient
      * @param string $mode 
      * @throws InvalidArgumentException
      */
-    public function __construct($apiKey = false, $apiSecret = false, $redirectUri = false, $permissions = array("send", "transactions", "balance", "request", "contacts", "accountinfofull", "funding"), $mode = 'live')
+    public function __construct($apiKey = false, $apiSecret = false, $redirectUri = false, $permissions = array("send", "transactions", "balance", "request", "contacts", "accountinfofull", "funding"), $mode = 'live', $debugMode = false)
     {
         $this->apiKey = $apiKey;
         $this->apiSecret = $apiSecret;
@@ -113,7 +118,7 @@ class DwollaRestClient
         $this->apiServerUrl = self::API_SERVER;
         $this->setMode($mode);
     }
-
+    
     /**
      * Get oauth authenitcation URL
      * 
@@ -197,6 +202,27 @@ class DwollaRestClient
         $user = $this->parse($response);
 
         return $user;
+    }
+
+    /**
+     * Get a list of users nearby a
+     * given geo location
+     *
+     * @return array Users
+     */
+    public function usersNearby($lat, $long)
+    {
+        $params = array(
+            'client_id' => $this->apiKey,
+            'client_secret' => $this->apiSecret,
+            'latitude' => $lat,
+            'longitude' => $long
+        );
+
+        $response = $this->get("users/nearby", $params);
+        $users = $this->parse($response);
+
+        return $users;
     }
 
     /**
@@ -314,9 +340,121 @@ class DwollaRestClient
      */
     public function fundingSource($fundingSourceId)
     {
-        $response = $this->get("fundingsources?fundingid={$fundingSourceId}");
+        $response = $this->get("fundingsources/{$fundingSourceId}");
         return $this->parse($response);
     }
+
+    /**
+     * Add a funding source for the user associated 
+     * with the authorized access token.
+     *
+     * @return array Funding Sources
+     */
+    public function addFundingSource($accountNumber, $routingNumber, $accountType, $accountName)
+    {
+        // Verify required paramteres
+        if (!$accountNumber) {
+          return $this->setError('Please enter a bank account number.');
+        } else if (!$routingNumber) {
+          return $this->setError('Please enter a bank routing number.');
+        } else if (!$accountType) {
+          return $this->setError('Please enter an account type.');
+        } else if (!$accountName) {
+          return $this->setError('Please enter an account name.');
+        }
+
+        // Build request, and send it to Dwolla
+        $params = array(
+          'account_number' => $accountNumber,
+          'routing_number' => $routingNumber,
+          'account_type' => $accountType,
+          'name' => $accountName
+        );
+
+        $response = $this->post('fundingsources/', $params);
+        return $this->parse($response);
+    }
+
+    /**
+     * Verify a funding source for the user associated 
+     * with the authorized access token.
+     *
+     * @return array Funding Sources
+     */
+    public function verifyFundingSource($fundingSourceId, $deposit1, $deposit2)
+    {
+        // Verify required paramteres
+        if (!$deposit1) {
+          return $this->setError('Please enter an amount for deposit1.');
+        } else if (!$deposit2) {
+          return $this->setError('Please enter an amount for deposit2.');
+        } else if (!$fundingSourceId) {
+          return $this->setError('Please enter a funding source ID.');
+        }
+
+        // Build request, and send it to Dwolla
+        $params = array(
+          'deposit1' => $deposit1,
+          'deposit2' => $deposit2
+        );
+
+        $response = $this->post("fundingsources/{$fundingSourceId}/verify", $params);
+        return $this->parse($response);
+    }
+    
+    /**
+     * Verify a funding source for the user associated 
+     * with the authorized access token.
+     *
+     * @return array Funding Sources
+     */
+    public function withdraw($fundingSourceId, $pin, $amount)
+    {
+        // Verify required paramteres
+        if (!$pin) {
+          return $this->setError('Please enter a PIN.');
+        } else if (!$fundingSourceId) {
+          return $this->setError('Please enter a funding source ID.');
+        } else if (!$amount) {
+          return $this->setError('Please enter an amount.');
+        }
+
+        // Build request, and send it to Dwolla
+        $params = array(
+          'pin' => $pin,
+          'amount' => $amount
+        );
+
+        $response = $this->post("fundingsources/{$fundingSourceId}/withdraw", $params);
+        return $this->parse($response);
+    }
+
+    /**
+     * Verify a funding source for the user associated 
+     * with the authorized access token.
+     *
+     * @return array Funding Sources
+     */
+    public function deposit($fundingSourceId, $pin, $amount)
+    {
+        // Verify required paramteres
+        if (!$pin) {
+          return $this->setError('Please enter a PIN.');
+        } else if (!$fundingSourceId) {
+          return $this->setError('Please enter a funding source ID.');
+        } else if (!$amount) {
+          return $this->setError('Please enter an amount.');
+        }
+
+        // Build request, and send it to Dwolla
+        $params = array(
+          'pin' => $pin,
+          'amount' => $amount
+        );
+
+        $response = $this->post("fundingsources/{$fundingSourceId}/deposit", $params);
+        return $this->parse($response);
+    }    
 
     /**
      * Retrieve the account balance for the user with the given authorized 
@@ -379,7 +517,6 @@ class DwollaRestClient
      * Request funds from a source user, originating from the user associated 
      * with the authorized access token.
      * 
-     * @param int $pin
      * @param string $sourceId
      * @param float $amount
      * @param string $sourceType
@@ -387,12 +524,10 @@ class DwollaRestClient
      * @param float $facilitatorAmount
      * @return int Request Id 
      */
-    public function request($pin = false, $sourceId = false, $amount = false, $sourceType = 'Dwolla', $notes = '', $facilitatorAmount = 0)
+    public function request($sourceId = false, $amount = false, $sourceType = 'Dwolla', $notes = '', $facilitatorAmount = 0)
     {
         // Verify required paramteres
-        if (!$pin) {
-            return $this->setError('Please enter a PIN.');
-        } else if (!$sourceId) {
+        if (!$sourceId) {
             return $this->setError('Please enter a source ID.');
         } else if (!$amount) {
             return $this->setError('Please enter a transaction amount.');
@@ -400,19 +535,98 @@ class DwollaRestClient
 
         // Build request, and send it to Dwolla
         $params = array(
-            'pin' => $pin,
             'sourceId' => $sourceId,
             'sourceType' => $sourceType,
             'amount' => $amount,
             'facilitatorAmount' => $facilitatorAmount,
             'notes' => $notes
         );
-        $response = $this->post('transactions/request', $params);
+        $response = $this->post('requests/', $params);
 
         // Parse Dwolla's response
         $transactionId = $this->parse($response);
 
         return $transactionId;
+    }
+    
+    /**
+     * Get a request by its ID
+
+     * @return array Request with the given ID
+     */
+    public function requestById($requestId)
+    {
+        // Verify required paramteres
+        if (!$requestId) {
+          return $this->setError('Please enter a request ID.');
+        }
+
+        // Build request, and send it to Dwolla
+        $response = $this->get("requests/{$requestId}");
+
+        // Parse Dwolla's response
+        $request = $this->parse($response);
+
+        return $request;
+    }
+
+    /**
+     * Fulfill (:send) a pending payment request
+
+     * @return array Transaction information
+     */
+    public function fulfillRequest($requestId, $pin, $amount = false, $notes = false, $fundsSource = false, $assumeCosts = false)
+    {
+        // Verify required paramteres
+        if (!$pin) {
+          return $this->setError('Please enter a PIN.');
+        } else if (!$requestId) {
+          return $this->setError('Please enter a request ID.');
+        }
+
+        // Build request, and send it to Dwolla
+        $params = array(
+          'pin' => $pin
+        );
+        if($amount) { $params['amount'] = $amount; }
+        if($notes) { $params['notes'] = $notes; }
+        if($fundsSource) { $params['fundsSource'] = $fundsSource; }
+        if($assumeCosts) { $params['assumeCosts'] = $assumeCosts; }
+
+        $response = $this->post("requests/{$requestId}/fulfill", $params);
+        return $this->parse($response);
+    }
+    
+    /**
+     * Cancel (:reject) a pending payment request
+
+     * @return array Transaction information
+     */
+    public function cancelRequest($requestId)
+    {
+        // Verify required paramteres
+        if (!$requestId) {
+          return $this->setError('Please enter a request ID.');
+        }
+
+        $response = $this->post("requests/{$requestId}/cancel", array());
+        return $this->parse($response);
+    }
+
+    /**
+     * Get a list of pending money requests
+
+     * @return array Pending Requests
+     */
+    public function requests()
+    {
+        // Build request, and send it to Dwolla
+        $response = $this->get("requests/");
+
+        // Parse Dwolla's response
+        $requests = $this->parse($response);
+
+        return $requests;
     }
 
     /**
@@ -730,8 +944,19 @@ class DwollaRestClient
     protected function post($request, $params = false, $includeToken = true)
     {
         $url = $this->apiServerUrl . $request . ($includeToken ? "?oauth_token=" . urlencode($this->oauthToken) : "");
-
+        
+        if($this->debugMode) {
+          echo "Posting request to: {$url} :: With params: \n";
+          print_r($params);
+        }
+        
         $rawData = $this->curl($url, 'POST', $params);
+        
+        if($this->debugMode) {
+          echo "Got response:";
+          print_r($rawData);
+          echo "\n";
+        }
 
         return $rawData;
     }
@@ -750,7 +975,17 @@ class DwollaRestClient
         $delimiter = (strpos($request, '?') === false) ? '?' : '&';
         $url = $this->apiServerUrl . $request . $delimiter . http_build_query($params);
 
+        if($this->debugMode) {
+          echo "Getting request from: {$url} \n";
+        }
+        
         $rawData = $this->curl($url, 'GET');
+
+        if($this->debugMode) {
+          echo "Got response:";
+          print_r($rawData);
+          echo "\n";
+        }
 
         return $rawData;
     }
@@ -787,9 +1022,12 @@ class DwollaRestClient
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
         // Windows require this certificate
-        $ca = dirname(__FILE__);
-        curl_setopt($ch, CURLOPT_CAINFO, $ca); // Set the location of the CA-bundle
-        curl_setopt($ch, CURLOPT_CAINFO, $ca . '/cacert.pem'); // Set the location of the CA-bundle
+        if( strtoupper (substr(PHP_OS, 0,3)) == 'WIN' ) {
+          $ca = dirname(__FILE__);
+          curl_setopt($ch, CURLOPT_CAINFO, $ca); // Set the location of the CA-bundle
+          curl_setopt($ch, CURLOPT_CAINFO, $ca . '/cacert.pem'); // Set the location of the CA-bundle
+        }
+
         // Initiate request
         $rawData = curl_exec($ch);
 
@@ -853,4 +1091,15 @@ class DwollaRestClient
         return $this->mode;
     }
 
+    /**
+     * Set debug mode
+     * 
+     * @return boolean True
+     */
+    public function setDebug($mode)
+    {
+      $this->debugMode = $mode;
+      
+      return true;
+    }
 }

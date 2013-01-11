@@ -10,6 +10,7 @@ $Dwolla = new DwollaRestClient($apiKey, $apiSecret);
 
 // Seed a previously generated access token
 $Dwolla->setToken($token);
+$Dwolla->setDebug(true);
 
 /**
  * EXAMPLE 1: 
@@ -39,3 +40,14 @@ else { print_r($user); } // Print user information
 $user = $Dwolla->getUser('michael@dwolla.com');
 if(!$user) { echo "Error: {$Dwolla->getError()} \n"; } // Check for errors
 else { print_r($user); } // Print user information
+
+/**
+ * EXAMPLE 4: 
+ *   Get users nearby a given geolocation
+ **/
+$lat = "40.708322";
+$long = "-74.0147477";
+
+$users = $Dwolla->usersNearby($lat, $long);
+if(!$users) { echo "Error: {$Dwolla->getError()} \n"; } // Check for errors
+else { print_r($users); }

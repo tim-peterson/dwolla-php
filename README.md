@@ -3,7 +3,7 @@
 
 ## Version 
 
-1.2.6
+1.3
 
 ## Requirements
 - [PHP](http://www.php.net/)
@@ -18,7 +18,7 @@ run the `php composer.phar install` command to install it:
 
     {
         "require": {
-            "dwolla/dwolla-php": "1.2.6"
+            "dwolla/dwolla-php": "1.3"
         }
     }
 
@@ -57,6 +57,7 @@ Users Methods:
 
     me()                ==> (array) the user entity associated with the token
     getUser($user_id)   ==> (array) the user entity for {$user_id}
+    usersNearby($lat, $long)  ==> (array) users nearby the given geolocation
     
 Register Methods:
 
@@ -71,15 +72,28 @@ Funding Sources Methods:
 
     fundingSources()    ==> (array) a list of funding sources associated with the token
     fundingSource($id)  ==> (array) information about the {$id} funding source
+    addFundingSource($accountNumber, $routingNumber, $accountType, $accountName)  ==>
+    verifyFundingSource($fundingSourceId, $deposit1, $deposit2) ==> 
+    withdraw($fundingSourceId, $pin, $amount) ==>
+    deposit($fundingSourceId, $pin, $amount)  ==> 
+    
     
 Balance Methods:
 
     balance()           ==> (string) the Dwolla balance of the account associated with the token
+
+Requests Method:
+
+    request($pin, $sourceId, $amount[, $sourceType, $notes, $facilitatorAmount])  ==> (string) request ID
+    requests()
+    requestById($requestId)
+    fulfillRequest($requestId, $pin, $amount = false, $notes = false, $fundsSource = false, $assumeCosts = false)
+    cancelRequest($requestId)
+    
     
 Transactions Methods:
 
     send($pin, $destinationId, $amount[, $destinationType, $notes, $facilitatorAmount, $assumeCosts])   ==> (string) transaction ID
-    request($pin, $sourceId, $amount[, $sourceType, $notes, $facilitatorAmount])                        ==> (string) request ID
     transaction($transactionId)                     ==> (array) transaction details
     listings([$sinceDate, $types, $limit, $skip])   ==> (array) a list of recent transactions matching the search criteria
     stats([$types, $sinceDate, $endDate])           ==> (array) statistics about the account associated with the token
@@ -96,8 +110,25 @@ Helper Methods:
     getError()          ==> (string) error message
     parseDwollaID($id)  ==> (bool) is valid Dwolla ID?
     setMode($mode)      ==> (bool) did mode change?
+    setDebug($mode)     ==> (bool) set debog [verbose] mode
 
 ## Changelog
+
+1.3
+
+* Fixed CAINFO cert issue on non-Win machines
+* Add users/nearby() method
+* Add contacts/nearby() method
+* Add requests/pending() method
+* Add requests/byId() method
+* Add requests/fulfill() method
+* Add requests/cancel() method
+* Add fundingSources/withdraw() method
+* Add fundingSources/deposit() method
+* Add fundingSources/add() method
+* Add fundingSources/verify() method
+* Clean up examples
+* Add debug mode for verbose operations
 
 1.2.6
 
