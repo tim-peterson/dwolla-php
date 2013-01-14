@@ -28,7 +28,7 @@
  * @author    Michael Schonfeld <michael@dwolla.com>
  * @copyright Copyright (c) 2012 Dwolla Inc. (http://www.dwolla.com)
  * @license   http://opensource.org/licenses/MIT MIT
- * @version   1.3.2
+ * @version   1.4
  * @link      http://www.dwolla.com
  */
 
@@ -873,9 +873,6 @@ class DwollaRestClient
             return $this->setError('Please pass a total transaction amount.');
         }
 
-        // Normalize parameters
-        $amount = floatval($amount);
-
         // Calculate an HMAC-SHA1 hexadecimal hash
         // of the checkoutId and amount ampersand separated
         // using the consumer secret of the application
@@ -890,6 +887,35 @@ class DwollaRestClient
 
         return TRUE;
     }
+    
+    /**
+     * Verifiy the signature returned from Webhook notifications
+     * 
+     * @return bool Is signature valid?
+     */
+    public function verifyWebhookSignature()
+    {
+        if (!function_exists('getallheaders')) { 
+            throw new Exception("This function can only be used in an Apache environment.");
+        }
+
+        // 1. Get the request body
+        $body = file_get_contents('php://input');
+        
+        // 2. Get Dwolla's signature
+        $headers = getallheaders();
+        $signature = $headers['X-Dwolla-Signature'];
+
+        // 3. Calculate hash, and compare to the signature
+        $hash = hash_hmac('sha1', $body, $this->apiSecret);
+        $validated = ($hash == $signature);
+        
+        if(!$validated) {
+            return $this->setError('Dwolla signature verification failed.');
+        }
+        
+        return TRUE;
+    }    
 
     /**
      * @return string|bool Error message or false if error message does not exist

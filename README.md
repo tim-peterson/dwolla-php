@@ -3,7 +3,7 @@
 
 ## Version 
 
-1.3.2
+1.4
 
 ## Requirements
 - [PHP](http://www.php.net/)
@@ -18,7 +18,7 @@ run the `php composer.phar install` command to install it:
 
     {
         "require": {
-            "dwolla/dwolla-php": "1.3.2"
+            "dwolla/dwolla-php": "1.4"
         }
     }
 
@@ -113,6 +113,12 @@ Helper Methods:
     setDebug($mode)     ==> (bool) set debog [verbose] mode
 
 ## Changelog
+
+1.4
+
+* Fix offsite gateway signature verification fn
+* Add Webhook signature verification fn
+* Add Webhook signature verification example
 
 1.3.2
 
