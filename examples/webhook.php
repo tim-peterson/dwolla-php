@@ -20,5 +20,5 @@ if(!$Dwolla->verifyWebhookSignature()) {
  * Now we can process the notification
  * by parsing its body...
  */
-$parsedBody = json_decode(file_get_contents('php://input', TRUE));
+$parsedBody = json_decode(file_get_contents('php://input'), TRUE);
 print_r($parsedBody);
