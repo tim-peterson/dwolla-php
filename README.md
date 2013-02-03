@@ -3,7 +3,7 @@
 
 ## Version 
 
-1.4
+1.4.1
 
 ## Requirements
 - [PHP](http://www.php.net/)
@@ -18,7 +18,7 @@ run the `php composer.phar install` command to install it:
 
     {
         "require": {
-            "dwolla/dwolla-php": "1.4"
+            "dwolla/dwolla-php": "1.4.1"
         }
     }
 
@@ -113,6 +113,10 @@ Helper Methods:
     setDebug($mode)     ==> (bool) set debog [verbose] mode
 
 ## Changelog
+
+1.4.1
+
+* Fix me() method by adding trailing slash (Thanks, @brettneese)
 
 1.4
 
