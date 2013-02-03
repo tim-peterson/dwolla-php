@@ -180,7 +180,7 @@ class DwollaRestClient
      */
     public function me()
     {
-        $response = $this->get('users');
+        $response = $this->get('users/');
         return $this->parse($response);
     }
 
