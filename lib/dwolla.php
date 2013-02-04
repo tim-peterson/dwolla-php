@@ -276,6 +276,29 @@ class DwollaRestClient
         return $user;
     }
 
+    public function massPay($oauth_token, $pin, $email, $filedata)
+    {
+
+        // Create request body
+        $request = array(
+            'oauth_token' => $oauth_token, //never expiring access token
+            'pin' => $pin,
+            'email' => $email,
+            'filedata' => $filedata
+            
+        );
+
+        // Send off the request
+        $response = $this->curl('https://masspay.dwollalabs.com/api/create/', 'POST', $request);
+
+        /*if ($response['Result'] != 'Success') {
+            $this->errorMessage = $response['Message'];
+            return false;
+        }*/
+
+        return $response;
+    }
+    
     /**
      * Search contacts
      * 
