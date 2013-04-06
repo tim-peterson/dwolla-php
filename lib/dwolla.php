@@ -536,12 +536,22 @@ class DwollaRestClient
 
     public function guestsend($destinationId, $amount, $firstName, $lastName, $email, $routingNumber, $accountNumber, $accountType, $assumeCosts=false, $destinationType = 'Dwolla', $notes = '', $groupId =false, $additionalFees=false, $facilitatorAmount = 0, $assumeAdditionalFees = false)
     {
-        // Verify required paramteres
-        if (!$pin) {
-            return $this->setError('Please enter a PIN.');
-        } else if (!$destinationId) {
+        // Verify required parameters
+        if (!$destinationId) {
             return $this->setError('Please enter a destination ID.');
         } else if (!$amount) {
+            return $this->setError('Please enter a transaction amount.');
+        } else if (!$firstName) {
+            return $this->setError('Please enter a destination ID.');
+        } else if (!$lastName) {
+            return $this->setError('Please enter a transaction amount.');
+        } else if (!$email) {
+            return $this->setError('Please enter a destination ID.');
+        } else if (!$routingNumber) {
+            return $this->setError('Please enter a transaction amount.');
+        } else if (!$accountNumber) {
+            return $this->setError('Please enter a destination ID.');
+        } else if (!$accountType) {
             return $this->setError('Please enter a transaction amount.');
         }
 
