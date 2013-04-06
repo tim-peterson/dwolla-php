@@ -276,6 +276,15 @@ class DwollaRestClient
         return $user;
     }
 
+    /**
+     * massPay
+     * 
+     * @param int $pin
+     * @param string $email    
+     * @param array $filedata arrayed array of destination and amount, i.e., $filedata=array(array('destination'=>'xxx-xx-xxx', 'amount'=>' 0.04'));
+     * @return array $response Did the request succeed? 
+     */
+
     public function massPay($oauth_token, $pin, $email, $filedata)
     {
 
@@ -501,6 +510,68 @@ class DwollaRestClient
         return $this->parse($response);
     }
 
+
+    /**
+     * Send funds to a destination user from the user associated with the 
+     * authorized access token.
+     * @param string $destinationId Dwolla identifier, Facebook identifier, Twitter identifier, phone number, or email address
+     * @param float $amount Amount of funds to transfer to the destination user.
+     * @param string $firstName The source bank account holder's first name
+     * @param string $lastName The source bank account holder's last name
+     * @param string $email The source bank account holder's email address
+     * @param int $routingNumber The source bank routing number
+     * @param int $accountNumber The source bank account number
+     * @param string $accountType "Checking" or "Savings"
+     *
+     * The following are NON-essential params: *
+     * @param bool $assumeCosts defaults to false
+     * @param string $destinationType  Type of destination user. Can be Dwolla, Facebook, Twitter, Email, or Phone. Defaults to Dwolla.
+     * @param string $notes Note to attach to the transaction. Limited to 250 characters.
+     * @param int $groupId ID specified by the client application, to be associated with the transaction. May be used to group transactions by the given ID. Note: Transactions can be polled by their given 'groupId' using the transactions/Listing method.
+     * @param array $additionalFees Array of Additional facilitator fees, array('destinationId'=Facilitator's Dwolla ID,  'amount'=Faciliator Amount)
+     * @param float $facilitatorAmount facilitatorAmount    Amount of the facilitator fee to override. Only applicable if the facilitator fee feature is enabled. If set to 0, facilitator fee is disabled for transaction. Cannot exceed 50% of the 'amount'.
+     * @param bool $assumeAdditionalFees assumeAdditionalFees     Set to true if the sending user will assume all Facilitator fees. Set to false if the destination user will assume all Facilitator fees. Does not affect the Dwolla fee.
+     * @return string Transaction Id 
+*/
+
+    public function guestsend($destinationId, $amount, $firstName, $lastName, $email, $routingNumber, $accountNumber, $accountType, $assumeCosts=false, $destinationType = 'Dwolla', $notes = '', $groupId =false, $additionalFees=false, $facilitatorAmount = 0, $assumeAdditionalFees = false)
+    {
+        // Verify required paramteres
+        if (!$pin) {
+            return $this->setError('Please enter a PIN.');
+        } else if (!$destinationId) {
+            return $this->setError('Please enter a destination ID.');
+        } else if (!$amount) {
+            return $this->setError('Please enter a transaction amount.');
+        }
+
+        // Build request, and send it to Dwolla
+        $params = array(
+            'destinationId' => $destinationId,
+            'amount' => $amount,
+            'firstName' => $firstName,
+            'lastName' => $lastName,
+            'email' => $email,   
+            'routingNumber' => $routingNumber,
+            'accountNumber' => $accountNumber,
+            'accountType' => $accountType,    
+            'assumeCosts' => $assumeCosts,       
+            'destinationType' => $destinationType,    
+            'notes' => $notes,
+            'groupId' => $groupId,  
+            'additionalFees' => $additionalFees,        
+            'facilitatorAmount' => $facilitatorAmount,          
+            'assumeAdditionalFees' => $assumeAdditionalFees
+        );
+        $response = $this->post('transactions/guestsend', $params);
+
+        // Parse Dwolla's response
+        $transactionId = $this->parse($response);
+
+        return $transactionId;
+    }
+
+
     /**
      * Send funds to a destination user from the user associated with the 
      * authorized access token.
@@ -584,7 +655,6 @@ class DwollaRestClient
     
     /**
      * Get a request by its ID
-
      * @return array Request with the given ID
      */
     public function requestById($requestId)
@@ -605,7 +675,6 @@ class DwollaRestClient
 
     /**
      * Fulfill (:send) a pending payment request
-
      * @return array Transaction information
      */
     public function fulfillRequest($requestId, $pin, $amount = false, $notes = false, $fundsSource = false, $assumeCosts = false)
@@ -632,7 +701,6 @@ class DwollaRestClient
     
     /**
      * Cancel (:reject) a pending payment request
-
      * @return array Transaction information
      */
     public function cancelRequest($requestId)
@@ -648,7 +716,6 @@ class DwollaRestClient
 
     /**
      * Get a list of pending money requests
-
      * @return array Pending Requests
      */
     public function requests()

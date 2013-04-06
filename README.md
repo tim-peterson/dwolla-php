@@ -93,6 +93,7 @@ Requests Method:
     
 Transactions Methods:
 
+    guestsend($destinationId, $amount, $firstName, $lastName, $email, $routingNumber, $accountNumber, $accountType[, $assumeCosts, $destinationType, $notes, $groupId, $additionalFees, $facilitatorAmount, $assumeAdditionalFees])   ==> (string) 
     send($pin, $destinationId, $amount[, $destinationType, $notes, $facilitatorAmount, $assumeCosts])   ==> (string) transaction ID
     transaction($transactionId)                     ==> (array) transaction details
     listings([$sinceDate, $types, $limit, $skip])   ==> (array) a list of recent transactions matching the search criteria
