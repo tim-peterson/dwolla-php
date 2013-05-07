@@ -307,7 +307,45 @@ class DwollaRestClient
 
         return $response;
     }
-    
+ 
+
+    /**
+     * massPayDetails
+     * 
+     * @param string $uid The Dwolla ID of the user associated with the MassPay job
+     * @param string $job_id The job ID of the desired MassPay job. You must specify either a 'job_id', or a 'user_job_id'   
+     * @param bool $user_job_id The user assigned job ID of the desired MassPay job.
+     * @return bool $include_details  Whether to include a detailed response baout each job row. Defaults to: 'false'
+     */
+
+     public function massPayDetails($uid, $job_id = FALSE, $user_job_id = FALSE, $include_details = FALSE)
+    {
+        if (!$uid) {
+          return $this->setError('Please pass the associated Dwolla ID.');
+        } else if (!$job_id && !$user_job_id) {
+          return $this->setError('Please pass either a MassPay job ID, or a user assigned job ID.');
+        }
+
+        // Create request body
+        $params = array(
+          'uid' => $uid
+        );
+        if($job_id) { $params['job_id'] = $job_id; }
+        if($user_job_id) { $params['user_job_id'] = $user_job_id; }
+
+        $params['user_job_id'] = $user_job_id ? 'true' : 'false';
+        $params['include_details'] = $include_details ? 'true' : 'false'; 
+
+        // Send off the request
+        $response = $this->curl('https://masspay.dwollalabs.com/api/status/', 'POST', $params);
+
+        if (!$response['success']) {
+            $this->errorMessage = $response['message'];
+        }
+
+        return $response;
+    }
+
     /**
      * Search contacts
      * 
